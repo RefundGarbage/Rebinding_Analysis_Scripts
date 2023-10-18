@@ -1,0 +1,160 @@
+import numpy as np
+from skimage import io as imgio
+from scipy import io as scio
+import math
+import os
+from natsort import natsorted
+import time
+
+def main(): 
+    video_path = 'F:\\OlympusAnalysis\\test'
+    mask_path = 'F:\\OlympusAnalysis\\test'
+    save_path = video_path + "\\Analysis_Singles"
+    outputB = save_path + "\\outputB.mat"
+    outputL = save_path + "\\outputL.mat"
+
+    masks = natsorted(get_file_names_with_ext(mask_path, 'png'))
+    sB, sL, tB, tL = csv_name_sort(save_path, len(masks))
+
+    infoB = {}
+    infoL = {}
+    
+    for i in range(len(masks)):
+        mask = np.swapaxes(imgio.imread(masks[i]), 0, 1)
+        outlines = mask_extract_outline(mask)
+        print(masks[i])
+        
+        for csv in sB[i]:
+            print('\t-> ' + csv)
+            entry = generate_entry(csv, outlines)
+            key = '_'.join(entry[0])
+            details = list(entry[1:])
+            details.append(i+1)
+            infoB[key] = details
+        
+        for csv in sL[i]:
+            print('\t-> ' + csv)
+            entry = generate_entry(csv, outlines)
+            key = '_'.join(entry[0])
+            details = list(entry[1:])
+            details.append(i+1)
+            infoL[key] = details
+
+    print('Outline Info: ')
+    print('Bound: ' + outputB)
+    print('Lifetime: ' + outputL)
+    scio.savemat(outputB, infoB)
+    scio.savemat(outputL, infoL)
+
+def generate_entry(csv, outlines):
+    fname = csv.split('\\')[-1].split('_')
+    cell = int(fname[-2])
+    outline = outlines[cell]
+    length, major, minor = cell_length(outline)
+    return fname[:-1], major, minor, outline, cell
+
+
+# From Cecy's script
+def cell_length(outline):
+    #---initialize the min, max values of the coordinates of the outline of one cell
+    maxx= float('-inf')
+    maxy= float('-inf')
+    minx= float('inf')
+    miny= float('inf')
+
+#--This for loop finds the max and min value for x and y coordinates: maxx= max (x) pixel coord, minx= min (x) pixel coord, maxy= max (y) pixel coord, miny= "" ""
+    for i in range (len(outline)):
+
+        x=outline[i][0]
+        y=outline[i][1]
+        
+        if x>maxx:
+            maxx=x
+        if y>maxy:
+            maxy=y
+        if y<miny:
+            miny=y
+        if x<minx:
+            minx=x
+
+    length=math.sqrt((maxx-minx)**2+(maxy-miny)**2) #cell length
+    majoraxis=max(maxx-minx, maxy-miny) #major axis
+    minoraxis=min(maxx-minx, maxy-miny) #minor axis
+
+    return length, majoraxis, minoraxis
+
+def mask_extract_outline(mask):
+    # cell id starts with 1
+    outline = {0:[]}
+    for x in range(mask.shape[0]):
+        for y in range(mask.shape[1]):
+            if mask[x][y] != 0:
+                if mask[x][y] in outline:
+                    outline[mask[x][y]].append([x, y])
+                else:
+                    outline[mask[x][y]] = [[x, y]]
+    for key in outline:
+        outline[key] = np.array(outline[key])
+    return outline
+
+def get_file_names_with_ext(path:str, ext:str):
+    flist = []
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            fname = file.split('.')
+            if(fname[-1] == ext):
+                flist.append(root + '\\' +  file)
+    return flist
+
+def csv_name_sort(path:str, n_video):
+    flist = get_file_names_with_ext(path, 'csv')
+    sB = []
+    sL = []
+    tB = []
+    tL = []
+    for file in flist:
+        fname = file.split('\\')[-1].split('_')
+        if len(fname) < 4:
+            continue
+        if not fname[-3] == 'Cell':
+            continue
+        if fname[-1] == 'spotsBound.csv':
+            sB.append(file)
+        elif fname[-1] == 'spotsLifetime.csv':
+            sL.append(file)
+        elif fname[-1] == 'tracksBound.csv':
+            tB.append(file)
+        elif fname[-1] == 'tracksLifetime.csv':
+            tL.append(file)
+
+    return [csv_name_sort_helper(natsorted(sB), n_video), 
+            csv_name_sort_helper(natsorted(sL), n_video),
+            csv_name_sort_helper(natsorted(tB), n_video), 
+            csv_name_sort_helper(natsorted(tL), n_video)]
+
+# tired of typing for loops
+def csv_name_sort_helper(fr, n_video):
+    temp = []
+    for i in range(n_video):
+        list = []
+        temp.append(list)
+    
+    video = []
+
+    for file in fr:
+        fname = file.split('\\')[-1].split('_')
+        video_name = "_".join(fname[:-3])
+        if not (video_name in video):
+            video.append(video_name)
+    
+    for file in fr:
+        fname = file.split('\\')[-1].split('_')
+        index1 = video.index("_".join(fname[:-3]))
+        index2 = int(fname[-2]) - 1
+        temp[index1].append(file)
+    return temp
+
+if True:
+	start_time = time.time()
+	main()
+	print("--- %s seconds ---" % (time.time() - start_time))
