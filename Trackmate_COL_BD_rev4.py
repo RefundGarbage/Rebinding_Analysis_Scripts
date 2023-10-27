@@ -63,10 +63,12 @@ def main():
                 trB = spots_to_tracks(spotsBound)
                 bound_track_total += len(list(trB.keys()))
                 trL_aligned = track_align(trL, max_frame_gap, max_distance_gap)
+                fits_pending = []
                 for entryB in trB:
                     trackBound = trB[entryB]
                     frB = [a[0] for a in trackBound]
                     frB_min, frB_max = frB[0], frB[-1]
+                    fits = {}
                     for c in range(len(trL_aligned)):
                         trackLife = trL_aligned[c]
                         if(frB_max > trackLife[0][0] or frB_min < trackLife[-1][0]):
@@ -79,12 +81,10 @@ def main():
                             for entryF in fit:
                                 if(len(entryF) > 4):
                                     entryF[4] = rs_index
-                            trL_aligned[c] = track_insert(trackLife, fit)
+                            fits[c] = fit.copy()
                             n_fit += 1
-                            break
-                trL = {}
-                for c in range(len(trL_aligned)):
-                    trL[c] = trL_aligned[c]
+                    fits_pending.append(fits)
+                trL = fits_on_track(fits_pending, trL_aligned, max_distance_gap)
                 print('Track Fit to Lifetime (' + str(n_fit) + ')')
             
             # final_result
@@ -151,6 +151,12 @@ def main():
     csv_write(csv_path + '\\_ColBD_spots.csv', final_result)
     return
 
+'''
+================================================================================================================
+ANALYSIS: DWELL
+================================================================================================================
+'''
+
 # consider =0 not include 0, -1 include 0
 def dwell_isolation(final_result, consider=0):
     final_dwell = []
@@ -178,6 +184,100 @@ def dwell_isolation(final_result, consider=0):
                 track = []
     if(len(track) > 0): final_dwell.append(dwell(track))
     return final_dwell
+
+def dwell(track):
+    frames = [entry[3] for entry in track]
+    return [track[0][0], track[0][1], track[0][2], max(frames) - min(frames)]
+
+'''
+================================================================================================================
+TRACK CLASSIFICATION
+================================================================================================================
+'''
+
+# fits multiple tracks on lifetime tracks
+# Under distance threshold, longer the better.
+def fits_on_track(pending, tracklife, distance_gap):
+    res = {}
+    # eliminates with distance
+    for tracks in pending:
+        if(len(tracks.keys()) <= 1): continue
+        for key in tracks:
+            # Max distance > gap
+            if(fits_evaluate(tracks[key])[4] > distance_gap):
+                del tracks[key]
+
+    # fits with resolved frame conflict
+    for c in range(len(tracklife)):
+        fits = []
+        fits_parameters = []
+        for tracks in pending:
+            if(c in tracks.keys()):
+                fits.append(tracks[c])
+                fits_parameters.append(fits_evaluate(tracks[c]))
+        
+        trL = tracklife[c]
+        frames = [l[0] for l in trL]
+        frame_min, frame_max = min(frames), max(frames)
+        frames = [-1]*(frame_max - frame_min + 1)
+        selected = {}
+        
+        for i in range(len(fits)):
+            fit = fits[i]
+            do_insert = True
+            fit_parameter = fits_parameters[i]
+            if(fit_parameter[0] < frame_min or
+               fit_parameter[1] > frame_max):
+                continue
+            for f in range(fit_parameter[0] - frame_min, fit_parameter[1] + 1 - frame_min):
+                if(not frames[f] == -1):
+                    compare = fits_parameters[frames[f]]
+                    if(fits_compare(fit_parameter, compare)):
+                        do_insert = False
+                        break
+                    else:
+                        fits_remove(frames, frames[f])
+                        del selected[frames[f]]
+            if(do_insert):
+                fits_choose(frames, fit_parameter[0] - frame_min, fit_parameter[1] - frame_min, i)
+                selected[i] = fit
+        
+        # insert tracks
+        for key in selected:
+            trL = track_insert(trL, selected[key])
+        res[c]= trL
+    return res
+
+def fits_choose(frames, fmin, fmax, index):
+    for i in range(fmin, fmax + 1):
+        frames[i] = index
+
+def fits_remove(frames, index):
+    for i in range(len(frames)):
+        if(frames[i] == index):
+            frames[i] = -1
+
+# Adjustable comparison
+def fits_compare(parameter1, parameter2):
+    # compare length
+    if(parameter1[2] < parameter2[2]): return True
+    else: return False
+
+def fits_evaluate(track):
+    frames = [t[0] for t in track]
+    fmin, fmax = min(frames), max(frames)
+    flength = fmax - fmin
+    distances = [t[5] for t in track]
+    dmax, dmean = max(distances), np.mean(distances)
+    return fmin, fmax, flength, dmean, dmax
+
+def track_anneal(trackf, trackb):
+    end = trackf[-1][0]
+    index = 0
+    while(trackb[index][0] <= end): index += 1
+    if(index >= len(trackb)):
+        return trackf
+    return trackf + trackb[index:]
 
 def track_align(tracks_raw, frame_gap, distance_gap):
     tracks = []
@@ -210,18 +310,6 @@ def track_align(tracks_raw, frame_gap, distance_gap):
                 track = (track_anneal(track[0], compare[0]), track[1], track[2])
         res.append(track[0])
     return res
-
-def track_anneal(trackf, trackb):
-    end = trackf[-1][0]
-    index = 0
-    while(trackb[index][0] <= end): index += 1
-    if(index >= len(trackb)):
-        return trackf
-    return trackf + trackb[index:]
-
-def dwell(track):
-    frames = [entry[3] for entry in track]
-    return [track[0][0], track[0][1], track[0][2], max(frames) - min(frames)]
 
 def csv_write(path, data):
     with open(path, 'w', newline='') as file:
@@ -365,6 +453,11 @@ def spots_to_tracks(spots):
     tracks[track_number] = track.copy()
     return tracks
 
+'''
+================================================================================================================
+INPUT FORMATTING
+================================================================================================================
+'''
 def sort_by_frame(track):
     return sorted(track, key=lambda x: x[0])
 
@@ -387,7 +480,6 @@ def rs_recognition(file, mask, n_cell):
         except ValueError:
             continue
     return res
-
 
 # separate files by cell #
 def index_format(files, max):
@@ -503,7 +595,8 @@ def generate_indices(n_cell:int):
         indices.append(i+1)
     return indices
 
-if True:
+# Start Script
+if __name__== '__main__':
 	start_time = time.time()
 	main()
 	print("--- %s seconds ---" % (time.time() - start_time))
