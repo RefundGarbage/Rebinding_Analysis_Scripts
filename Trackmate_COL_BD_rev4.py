@@ -25,6 +25,7 @@ def main():
 
     final_result = []
     final_rs = []
+    final_rebind = []
 
     bound_track_total = 0
 
@@ -86,17 +87,22 @@ def main():
                     fits_pending.append(fits)
                 trL = fits_on_track(fits_pending, trL_aligned, max_distance_gap)
                 print('Track Fit to Lifetime (' + str(n_fit) + ')')
-            
-            # final_result
+
+            # final_result + rebinding_tabulate
             t = 1
             for entryL in trL:
                 entry = [i+1, k+1, t]
                 trackLife = trL[entryL]
+                rebinds = rebind_record(trackLife)
                 label_spots(trackLife, (0,), -1)
                 for spot in trackLife:
                     formatted = entry.copy()
                     formatted += spot
                     final_result.append(formatted)
+                for event in rebinds:
+                    formatted = entry.copy()
+                    formatted += event
+                    final_rebind.append(formatted)
                 t += 1
 
         # final_rs
@@ -128,28 +134,112 @@ def main():
     print('\tBound to Fixed Particle:')
     print('\t\t-> # Track Bound =', len(final_dwell))
     print('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell]))
+    print('\t\t\tstd:', np.std([entry[3] for entry in final_dwell]))
     print('')
     print('\tAll Bound Tracks')
     print('\t\t-> # Track Bound =', len(final_dwell_not_bound))
     print('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell_not_bound]))
+    print('\t\t\tstd:', np.std([entry[3] for entry in final_dwell_not_bound]))
     print('')
     print('\tOnly Long Tracks > 10 frames')
     print('\t\t-> # Track Bound =', len(final_dwell_not_bound_long))
     print('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell_not_bound_long]))
+    print('\t\t\tstd:', np.std([entry[3] for entry in final_dwell_not_bound_long]))
     print('')
     print('\tOnly Short Tracks <= 10 frames')
     print('\t\t-> # Track Bound =', len(final_dwell_not_bound_short))
     print('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell_not_bound_short]))
+    print('\t\t\tstd:', np.std([entry[3] for entry in final_dwell_not_bound_short]))
     print('')
 
     # Analysis Rebinding
     print('Analyzing: Rebinding')
+    final_rebind_purge_single = []
+    for entry in final_rebind:
+        if(entry[-2] > 1):
+            final_rebind_purge_single.append(entry)
+
+    final_rebind_only_rs = []
+    for entry in final_rebind:
+        if(not(entry[-3] == 0 or entry[-4] == 0)):
+            final_rebind_only_rs.append(entry)
+
+    final_rebind_same = []
+    final_rebind_diff = []
+    for entry in final_rebind_only_rs:
+        if(entry[-3] == entry[-4]):
+            final_rebind_same.append(entry)
+        else:
+            final_rebind_diff.append(entry)
     
+    print('\tRebinding to Everything | with single-frame events:')
+    print('\t\t-> # Rebinding Event =', len(final_rebind))
+    print('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind]))
+    print('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind]))
+    print('')
+    print('\tRebinding to Everything | without single-frame events:')
+    print('\t\t-> # Rebinding Event =', len(final_rebind_purge_single))
+    print('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind_purge_single]))
+    print('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind_purge_single]))
+    print('')
+    print('\tRebinding to Fixed Particles | with single-frame events:')
+    print('\t\t-> # Rebinding Event =', len(final_rebind_only_rs))
+    print('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind_only_rs]))
+    print('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind_only_rs]))
+    print('')
+    print('\tRebinding to Fixed Particles (SAME) | with single-frame events:')
+    print('\t\t-> # Rebinding Event =', len(final_rebind_same))
+    print('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind_same]))
+    print('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind_same]))
+    print('')
+    print('\tRebinding to Fixed Particles (DIFFERENT) | with single-frame events:')
+    print('\t\t-> # Rebinding Event =', len(final_rebind_diff))
+    print('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind_diff]))
+    print('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind_diff]))
+    print('')
 
     # output, fixed-particles and colocalized
     csv_write(csv_path + '\\_ColBD_fixed-particles.csv', final_rs)
     csv_write(csv_path + '\\_ColBD_spots.csv', final_result)
+    csv_write(csv_path + '\\_ColBD_rebinding.csv', final_rebind)
     return
+
+'''
+================================================================================================================
+ANALYSIS: REBINDING
+================================================================================================================
+'''
+
+# Analyze after each fit, tabulate all information about rebinding
+# format:
+#   [number, rs_prev, rs_next, rebinding time, avg speed (pix/fr)]
+def rebind_record(track):
+    rebinds = []
+    event = []
+    active = False
+    record = track[0][4] if len(track[0]) > 4 else -1
+    f = 0
+    i = 1
+    while(f < len(track)):
+        if(len(track[f]) > 4): active = True
+        if(len(event) > 0 and len(track[f]) > 4):
+            rebinds.append([i] + rebind_tabulate(event.copy(), record, track[f][4]))
+            event = []
+            record = track[f][4]
+            i += 1
+        elif(len(track[f]) <= 4 and active):
+            event.append(track[f])
+        f += 1
+    return rebinds
+
+def rebind_tabulate(segment, prev, nxt):
+    frames = [s[0] for s in segment]
+    rebinding_time = max(frames) - min(frames) + 1
+    distances = [0]
+    if(len(segment) > 1):
+        for i in range(1, len(segment)):
+            distances.append(distance([segment[i-1][1], segment[i-1][2]], [segment[i][1], segment[i][2]]))
+    return [prev, nxt, rebinding_time, sum(distances)/rebinding_time]
 
 '''
 ================================================================================================================
@@ -594,6 +684,12 @@ def generate_indices(n_cell:int):
     for i in range(n_cell):
         indices.append(i+1)
     return indices
+
+'''
+================================================================================================================
+START
+================================================================================================================
+'''
 
 # Start Script
 if __name__== '__main__':
