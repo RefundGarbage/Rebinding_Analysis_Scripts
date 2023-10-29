@@ -234,6 +234,8 @@ def rebind_record(track):
             i += 1
         elif(len(track[f]) <= 4 and active):
             event.append(track[f])
+        elif(len(track[f]) > 4 and active):
+            record = track[f][4]
         f += 1
     return rebinds
 
