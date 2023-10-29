@@ -8,9 +8,9 @@ import csv
 
 def main(): 
     # Note: rs -> replisome location, determined by DnaB signal
-    csv_path = 'F:\\DiffusionAnalysis\\test1' # csv from trackmate
-    rs_path = 'F:\\DiffusionAnalysis\\test1' # *.tif.RESULT
-    mask_path = 'F:\\DiffusionAnalysis\\test1' # *.png
+    csv_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\AnalysisRebindCBCstart100noslow' # csv from trackmate
+    rs_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\particles_result' # *.tif.RESULT
+    mask_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\seg' # *.png
     max_frame_gap = 4 # frame, max frame gap allowed
     max_distance_gap = 2 # pix, max distance allowed for lifetime/bound difference
     entry_tolerance = 2 # frame, first n frames with double distance gap allowed
@@ -115,11 +115,16 @@ def main():
     final_dwell = dwell_isolation(final_result)
     final_dwell_not_bound = dwell_isolation(final_result, consider=-1)
 
-    
-    print('\t-> # Track Bound =', len(final_dwell))
-    print('\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell]))
-    print('\t-> # Track Bound (including 0) =', len(final_dwell_not_bound))
-    print('\t-> Average Dwell Time (including 0):', np.mean([entry[3] for entry in final_dwell_not_bound]))
+    print('\tBound to Fixed Particle:')
+    print('\t\t-> # Track Bound =', len(final_dwell))
+    print('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell]))
+    print('\t\t\tstd:', np.std([entry[3] for entry in final_dwell]))
+    print('')
+    print('\tAll Bound Tracks')
+    print('\t\t-> # Track Bound =', len(final_dwell_not_bound))
+    print('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell_not_bound]))
+    print('\t\t\tstd:', np.std([entry[3] for entry in final_dwell_not_bound]))
+    print('')
 
     # output, fixed-particles and colocalized
     csv_write(csv_path + '\\_ColBD_fixed-particles.csv', final_rs)

@@ -8,9 +8,9 @@ import csv
 
 def main(): 
     # Note: rs -> replisome location, determined by DnaB signal
-    csv_path = 'F:\\DiffusionAnalysis\\test1' # csv from trackmate
-    rs_path = 'F:\\DiffusionAnalysis\\test1' # *.tif.RESULT
-    mask_path = 'F:\\DiffusionAnalysis\\test1' # *.png
+    csv_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\AnalysisRebindCBCstart100noslow' # csv from trackmate
+    rs_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\particles_result' # *.tif.RESULT
+    mask_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\seg' # *.png
     max_frame_gap = 4 # frame, max frame gap allowed
     max_distance_gap = 2 # pix, max distance allowed for lifetime/bound difference
     entry_tolerance = 2 # frame, first n frames with double distance gap allowed
@@ -115,6 +115,11 @@ def main():
                 s += 1
 
     print('# Track Bound: ', bound_track_total)
+
+    # check
+    for entry in final_result:
+        if(not len(entry) == 9):
+            print(entry)
 
     # Analysis
     print ('Analyzing: Dwell')
@@ -292,10 +297,14 @@ def fits_on_track(pending, tracklife, distance_gap):
     # eliminates with distance
     for tracks in pending:
         if(len(tracks.keys()) <= 1): continue
+        deletion = []
         for key in tracks:
             # Max distance > gap
             if(fits_evaluate(tracks[key])[4] > distance_gap):
-                del tracks[key]
+                deletion.append(key)
+        for key in deletion:
+            del tracks[key]
+        
 
     # fits with resolved frame conflict
     for c in range(len(tracklife)):
@@ -326,8 +335,8 @@ def fits_on_track(pending, tracklife, distance_gap):
                         do_insert = False
                         break
                     else:
-                        fits_remove(frames, frames[f])
                         del selected[frames[f]]
+                        fits_remove(frames, frames[f])
             if(do_insert):
                 fits_choose(frames, fit_parameter[0] - frame_min, fit_parameter[1] - frame_min, i)
                 selected[i] = fit
