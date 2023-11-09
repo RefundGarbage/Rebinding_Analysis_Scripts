@@ -5,6 +5,8 @@ import os
 from natsort import natsorted
 import time
 import csv
+import logging
+import sys
 
 def main(): 
     # Note: rs -> replisome location, determined by DnaB signal
@@ -16,6 +18,14 @@ def main():
     entry_tolerance = 2 # frame, first n frames with double distance gap allowed
     box_size = 4 # pix, edge length for replisome box
 
+    # Logging in both file and console
+    log_file = csv_path + '\\_ColBD_LOG.txt'
+    log_targets = [logging.FileHandler(log_file)]
+    logging.basicConfig(format='%(message)s', level=logging.INFO, handlers=log_targets)
+    logging.StreamHandler.terminator = ''
+    open(log_file, 'w').close()
+    os.system('cls')
+
     # Debug Note: single-letter front -> file paths, double-letter front -> data
     # Debug Note: csv_sorted: [sB, sL, tB, tL] per entry
     csv_sorted = csv_name_sort_loose(csv_path)
@@ -23,42 +33,44 @@ def main():
     rS = get_rs_with_ext(rs_path, 'tif_Results.csv')
     masks = natsorted(get_file_names_with_ext(mask_path, 'png'))
 
+    # masks = csv_mask_match(csv_sorted, spotKeys, masks)
+
     final_result = []
     final_rs = []
     final_rebind = []
-
+    final_unsuccessful_count = 0
     bound_track_total = 0
 
     # track classification`
     for i in range(len(masks)):
-        print('Processing:', masks[i])
+        print_log('Processing:', masks[i])
         mask = np.swapaxes(imgio.imread(masks[i]), 0, 1)
         n_cell = np.max(mask)
         rsS = rs_recognition(rS[i], mask, n_cell)
 
         sB = natsorted(csv_sorted[spotKeys[i]][0])
         sL = natsorted(csv_sorted[spotKeys[i]][1])
-        sB = index_format(sB, n_cell)
-        sL = index_format(sL, n_cell)
+        sB = index_format(sB, n_cell, masks[i])
+        sL = index_format(sL, n_cell, masks[i])
         # tB[i] = index_format(tB[i], n_cell)
         # tL[i] = index_format(tL[i], n_cell)
         
         for k in range(n_cell):
-            print('\t-> Cell', k+1, ': ', end='')
+            print_log('\t-> Cell', k+1, ': ', end='')
             spotsBound = parse_csv(mask, sB[k], k + 1, is_spots=True)
             spotsLife = parse_csv(mask, sL[k], k + 1, is_spots=True)
             # tracksBound = parse_csv(mask, tB[i][k], k + 1, is_spots=False) # no need
             # tracksLife = parse_csv(mask, tL[i][k], k + 1, is_spots=False) # no need
 
             if(spotsLife == None):
-                print('No Spots in Lifetime')
+                print_log('No Spots in Lifetime')
                 continue # No spots
             trL = spots_to_tracks(spotsLife)
 
             if(spotsBound == None): # Label as Diffusive for all
                 for entry in trL:
                     label_spots(trL[entry], (0,), -1)
-                print('Only Diffusive Spots')
+                print_log('Only Diffusive Spots')
             else:
                 n_fit = 0
                 trB = spots_to_tracks(spotsBound)
@@ -86,14 +98,15 @@ def main():
                             n_fit += 1
                     fits_pending.append(fits)
                 trL = fits_on_track(fits_pending, trL_aligned, max_distance_gap)
-                print('Track Fit to Lifetime (' + str(n_fit) + ')')
+                print_log('Track Fit to Lifetime (' + str(n_fit) + ')')
 
             # final_result + rebinding_tabulate
             t = 1
             for entryL in trL:
                 entry = [i+1, k+1, t]
                 trackLife = trL[entryL]
-                rebinds = rebind_record(trackLife)
+                rebinds, unsuccessful = rebind_record(trackLife)
+                final_unsuccessful_count += unsuccessful
                 label_spots(trackLife, (0,), -1)
                 for spot in trackLife:
                     formatted = entry.copy()
@@ -114,15 +127,15 @@ def main():
                 final_rs.append(entry + [s] + list(spot[2:]))
                 s += 1
 
-    print('# Track Bound: ', bound_track_total)
+    print_log('# Track Bound: ', bound_track_total)
 
     # check
     for entry in final_result:
         if(not len(entry) == 9):
-            print(entry)
+            print_log(entry)
 
     # Analysis
-    print ('Analyzing: Dwell')
+    print_log ('Analyzing: Dwell')
     final_dwell = dwell_isolation(final_result)
     final_dwell_not_bound = dwell_isolation(final_result, consider=-1)
 
@@ -136,29 +149,31 @@ def main():
         if(entry[3] <= 10):
             final_dwell_not_bound_short.append(entry)
     
-    print('\tBound to Fixed Particle:')
-    print('\t\t-> # Track Bound =', len(final_dwell))
-    print('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell]))
-    print('\t\t\tstd:', np.std([entry[3] for entry in final_dwell]))
-    print('')
-    print('\tAll Bound Tracks')
-    print('\t\t-> # Track Bound =', len(final_dwell_not_bound))
-    print('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell_not_bound]))
-    print('\t\t\tstd:', np.std([entry[3] for entry in final_dwell_not_bound]))
-    print('')
-    print('\tOnly Long Tracks > 10 frames')
-    print('\t\t-> # Track Bound =', len(final_dwell_not_bound_long))
-    print('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell_not_bound_long]))
-    print('\t\t\tstd:', np.std([entry[3] for entry in final_dwell_not_bound_long]))
-    print('')
-    print('\tOnly Short Tracks <= 10 frames')
-    print('\t\t-> # Track Bound =', len(final_dwell_not_bound_short))
-    print('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell_not_bound_short]))
-    print('\t\t\tstd:', np.std([entry[3] for entry in final_dwell_not_bound_short]))
-    print('')
+    print_log('\tBound to Fixed Particle:')
+    print_log('\t\t-> # Track Bound =', len(final_dwell))
+    print_log('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell]))
+    print_log('\t\t\tstd:', np.std([entry[3] for entry in final_dwell]))
+    print_log('')
+    print_log('\tAll Bound Tracks')
+    print_log('\t\t-> # Track Bound =', len(final_dwell_not_bound))
+    print_log('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell_not_bound]))
+    print_log('\t\t\tstd:', np.std([entry[3] for entry in final_dwell_not_bound]))
+    print_log('')
+    print_log('\tOnly Long Tracks > 10 frames')
+    print_log('\t\t-> # Track Bound =', len(final_dwell_not_bound_long))
+    print_log('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell_not_bound_long]))
+    print_log('\t\t\tstd:', np.std([entry[3] for entry in final_dwell_not_bound_long]))
+    print_log('')
+    print_log('\tOnly Short Tracks <= 10 frames')
+    print_log('\t\t-> # Track Bound =', len(final_dwell_not_bound_short))
+    print_log('\t\t-> Average Dwell Time:', np.mean([entry[3] for entry in final_dwell_not_bound_short]))
+    print_log('\t\t\tstd:', np.std([entry[3] for entry in final_dwell_not_bound_short]))
+    print_log('')
+    print_log('------------------------------------------------------------------------------------------')
+    print_log('')
 
     # Analysis Rebinding
-    print('Analyzing: Rebinding')
+    print_log('Analyzing: Rebinding Time')
     final_rebind_purge_single = []
     for entry in final_rebind:
         if(entry[-2] > 1):
@@ -177,31 +192,48 @@ def main():
         else:
             final_rebind_diff.append(entry)
     
-    print('\tRebinding to Everything | with single-frame events:')
-    print('\t\t-> # Rebinding Event =', len(final_rebind))
-    print('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind]))
-    print('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind]))
-    print('')
-    print('\tRebinding to Everything | without single-frame events:')
-    print('\t\t-> # Rebinding Event =', len(final_rebind_purge_single))
-    print('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind_purge_single]))
-    print('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind_purge_single]))
-    print('')
-    print('\tRebinding to Fixed Particles | with single-frame events:')
-    print('\t\t-> # Rebinding Event =', len(final_rebind_only_rs))
-    print('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind_only_rs]))
-    print('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind_only_rs]))
-    print('')
-    print('\tRebinding to Fixed Particles (SAME) | with single-frame events:')
-    print('\t\t-> # Rebinding Event =', len(final_rebind_same))
-    print('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind_same]))
-    print('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind_same]))
-    print('')
-    print('\tRebinding to Fixed Particles (DIFFERENT) | with single-frame events:')
-    print('\t\t-> # Rebinding Event =', len(final_rebind_diff))
-    print('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind_diff]))
-    print('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind_diff]))
-    print('')
+    print_log('\tRebinding to Everything | with single-frame events:')
+    print_log('\t\t-> # Rebinding Event =', len(final_rebind))
+    print_log('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind]))
+    print_log('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind]))
+    print_log('')
+    print_log('\tRebinding to Everything | without single-frame events:')
+    print_log('\t\t-> # Rebinding Event =', len(final_rebind_purge_single))
+    print_log('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind_purge_single]))
+    print_log('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind_purge_single]))
+    print_log('')
+    print_log('\tRebinding to Fixed Particles | with single-frame events:')
+    print_log('\t\t-> # Rebinding Event =', len(final_rebind_only_rs))
+    print_log('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind_only_rs]))
+    print_log('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind_only_rs]))
+    print_log('')
+    print_log('\tRebinding to Fixed Particles (SAME) | with single-frame events:')
+    print_log('\t\t-> # Rebinding Event =', len(final_rebind_same))
+    print_log('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind_same]))
+    print_log('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind_same]))
+    print_log('')
+    print_log('\tRebinding to Fixed Particles (DIFFERENT) | with single-frame events:')
+    print_log('\t\t-> # Rebinding Event =', len(final_rebind_diff))
+    print_log('\t\t-> Average Rebind Time:', np.mean([entry[-2] for entry in final_rebind_diff]))
+    print_log('\t\t\tstd:', np.std([entry[-2] for entry in final_rebind_diff]))
+    print_log('')
+    print_log('------------------------------------------------------------------------------------------')
+    print_log('')
+
+    print_log('Analyzing: Rebinding Probability')
+    final_rprob_all = float(len(final_rebind)) / float(len(final_rebind) + final_unsuccessful_count)
+    final_rprob_purge_single = float(len(final_rebind_purge_single)) / float(len(final_rebind_purge_single) + final_unsuccessful_count)
+
+    print_log('\tRebinding to Everything | with single-frame events:')
+    print_log('\t\t-> # Rebinding Event =', len(final_rebind))
+    print_log('\t\t-> # Unsuccessful:', final_unsuccessful_count)
+    print_log('\t\t-> Probability:', final_rprob_all * 100, '%')
+    print_log('')
+    print_log('\tRebinding to Everything | without single-frame events:')
+    print_log('\t\t-> # Rebinding Event =', len(final_rebind_purge_single))
+    print_log('\t\t-> # Unsuccessful:', final_unsuccessful_count)
+    print_log('\t\t-> Probability:', final_rprob_purge_single * 100, '%')
+    print_log('')
 
     # output, fixed-particles and colocalized
     csv_write(csv_path + '\\_ColBD_fixed-particles.csv', final_rs)
@@ -214,7 +246,6 @@ def main():
 ANALYSIS: REBINDING
 ================================================================================================================
 '''
-
 # Analyze after each fit, tabulate all information about rebinding
 # format:
 #   [number, rs_prev, rs_next, rebinding time, avg speed (pix/fr)]
@@ -237,7 +268,11 @@ def rebind_record(track):
         elif(len(track[f]) > 4 and active):
             record = track[f][4]
         f += 1
-    return rebinds
+    
+    # unsuccessful event
+    if(len(event) > 0): unsuccessful = 1
+    else: unsuccessful = 0
+    return rebinds, unsuccessful
 
 def rebind_tabulate(segment, prev, nxt):
     frames = [s[0] for s in segment]
@@ -559,6 +594,45 @@ def spots_to_tracks(spots):
 INPUT FORMATTING
 ================================================================================================================
 '''
+# In case some videos have no tracks
+# TODO but not important (At least for now)
+def csv_mask_match(csv, videos, masks):
+    mnames = {}
+    vnames = {}
+    for m in masks:
+        name = m.split('\\')[-1].split('_')
+        index = -1
+        for n in range(len(name)):
+            try:
+                if(int(name[n]) >= 0):
+                    index = n + 1
+                    break
+            except:
+                continue
+        number = int(name[index])
+        name = '_'.join(name[:index])
+        if(name in mnames):
+            mnames[name].append(number)
+        else:
+            mnames[name] = [number]
+    for v in videos:
+        name = v.split('\\')[-1].split('_')
+        index = -1
+        for n in range(len(name)):
+            try:
+                if(int(name[n]) >= 0):
+                    index = n + 1
+                    break
+            except:
+                continue
+        number = int(name[index])
+        name = '_'.join(name[:index])
+        if(name in vnames):
+            vnames[name].append(number)
+        else:
+            vnames[name] = [number]
+    return 1
+
 def sort_by_frame(track):
     return sorted(track, key=lambda x: x[0])
 
@@ -583,12 +657,15 @@ def rs_recognition(file, mask, n_cell):
     return res
 
 # separate files by cell #
-def index_format(files, max):
+def index_format(files, max, mask_name):
     res = [None]*max
     for file in files:
         index = index_find(file)
-        if(not index == -1):
-            res[index - 1] = file
+        try:
+            if(not index == -1):
+                res[index - 1] = file
+        except:
+            raise ValueError('video mask mismatch')
     return res
 
 def index_find(name):
@@ -651,18 +728,19 @@ def csv_name_sort_loose(path:str) -> dict:
         fname = file.split('\\')[-1].split('_')
         if len(fname) < 4:
             continue
-        if not fname[-3] == 'Cell':
+        if 'Cell' not in fname:
             continue
-        video = str('_').join(fname[:-3])
+        ind = fname.index('Cell')
+        video = str('_').join(fname[:ind])
         if(not video in csv_sorted):
             csv_sorted[video] = [[],[],[],[]]
-        if 'spotsBound' in fname[-1]:
+        if 'spotsBound' in fname[ind+2]:
             csv_sorted[video][0].append(file)
-        elif 'spotsAll' in fname[-1]:
+        elif 'spotsAll' in fname[ind+2]:
             csv_sorted[video][1].append(file)
-        elif 'tracksBound' in fname[-1]:
+        elif 'tracksBound' in fname[ind+2]:
             csv_sorted[video][2].append(file)
-        elif 'tracksAll' in fname[-1]:
+        elif 'tracksAll' in fname[ind+2]:
             csv_sorted[video][3].append(file)
 
     return csv_sorted
@@ -702,8 +780,13 @@ START
 ================================================================================================================
 '''
 
+# Modified print
+def print_log(*args, end='\n'):
+    print(' '.join([str(a) for a in args]), end=end)
+    logging.info(' '.join([str(a) for a in args] + [end]))
+
 # Start Script
 if __name__== '__main__':
 	start_time = time.time()
 	main()
-	print("--- %s seconds ---" % (time.time() - start_time))
+	print_log("--- %s seconds ---" % (time.time() - start_time))
