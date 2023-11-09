@@ -38,7 +38,9 @@ def main():
     final_result = []
     final_rs = []
     final_rebind = []
-    final_unsuccessful_count = 0
+    final_rebind_unsuccessful_count = 0
+    final_bound_count = 0
+    final_bound_failed_count = 0
     bound_track_total = 0
 
     # track classification`
@@ -71,6 +73,7 @@ def main():
                 for entry in trL:
                     label_spots(trL[entry], (0,), -1)
                 print_log('Only Diffusive Spots')
+                final_bound_failed_count += 1
             else:
                 n_fit = 0
                 trB = spots_to_tracks(spotsBound)
@@ -106,7 +109,10 @@ def main():
                 entry = [i+1, k+1, t]
                 trackLife = trL[entryL]
                 rebinds, unsuccessful = rebind_record(trackLife)
-                final_unsuccessful_count += unsuccessful
+                final_rebind_unsuccessful_count += unsuccessful
+                bound_count = bound_record(trackLife)
+                if(bound_count > 0): final_bound_count += bound_count
+                else: final_bound_failed_count += 1
                 label_spots(trackLife, (0,), -1)
                 for spot in trackLife:
                     formatted = entry.copy()
@@ -221,18 +227,31 @@ def main():
     print_log('')
 
     print_log('Analyzing: Rebinding Probability')
-    final_rprob_all = float(len(final_rebind)) / float(len(final_rebind) + final_unsuccessful_count)
-    final_rprob_purge_single = float(len(final_rebind_purge_single)) / float(len(final_rebind_purge_single) + final_unsuccessful_count)
+    final_rprob_all = float(len(final_rebind)) / float(len(final_rebind) + final_rebind_unsuccessful_count)
+    final_rprob_purge_single = float(len(final_rebind_purge_single)) / float(len(final_rebind_purge_single) + final_rebind_unsuccessful_count)
 
     print_log('\tRebinding to Everything | with single-frame events:')
     print_log('\t\t-> # Rebinding Event =', len(final_rebind))
-    print_log('\t\t-> # Unsuccessful:', final_unsuccessful_count)
+    print_log('\t\t-> # Unsuccessful:', final_rebind_unsuccessful_count)
     print_log('\t\t-> Probability:', final_rprob_all * 100, '%')
     print_log('')
     print_log('\tRebinding to Everything | without single-frame events:')
     print_log('\t\t-> # Rebinding Event =', len(final_rebind_purge_single))
-    print_log('\t\t-> # Unsuccessful:', final_unsuccessful_count)
+    print_log('\t\t-> # Unsuccessful:', final_rebind_unsuccessful_count)
     print_log('\t\t-> Probability:', final_rprob_purge_single * 100, '%')
+    print_log('')
+    print_log('------------------------------------------------------------------------------------------')
+    print_log('')
+
+    print_log('Analyzing: Binding Probability')
+    final_bprob_all = float(final_bound_count) / float(final_bound_count + final_bound_failed_count)
+
+    print_log('\tRebinding to Everything | with single-frame events:')
+    print_log('\t\t-> # Binding Event =', final_bound_count)
+    print_log('\t\t-> # Unsuccessful:', final_bound_failed_count)
+    print_log('\t\t-> Probability:', final_bprob_all * 100, '%')
+    print_log('')
+    print_log('------------------------------------------------------------------------------------------')
     print_log('')
 
     # output, fixed-particles and colocalized
@@ -240,6 +259,30 @@ def main():
     csv_write(csv_path + '\\_ColBD_spots.csv', final_result)
     csv_write(csv_path + '\\_ColBD_rebinding.csv', final_rebind)
     return
+
+'''
+================================================================================================================
+ANALYSIS: BINDING
+================================================================================================================
+'''
+def bound_record(track):
+    bound_count = 0
+    active = False
+    record = track[0][4] if len(track[0]) > 4 else -1
+    f = 0
+    i = 1
+    while(f < len(track)):
+        if(len(track[f]) <= 4): active = True
+        if(len(track[f]) > 4 and record == -1):
+            if(active): bound_count += 1
+            record = track[f][4]
+        elif(len(track[f]) <= 4 and record > -1):
+            record = -1
+        elif(len(track[f]) > 4):
+            record = track[f][4]
+        f += 1
+
+    return bound_count
 
 '''
 ================================================================================================================
