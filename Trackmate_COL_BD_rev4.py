@@ -13,9 +13,14 @@ def main():
     csv_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\AnalysisRebindCBCstart100noslow' # csv from trackmate
     rs_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\particles_result' # *.tif.RESULT
     mask_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\seg' # *.png
+
+    # Additional Parameters
+    rebind_only_particles = True # Skip bound outside particles for rebind event tabulation
+    min_bound = 2 # min # frame for bound track
     max_frame_gap = 4 # frame, max frame gap allowed
     max_distance_gap = 2 # pix, max distance allowed for lifetime/bound difference
     entry_tolerance = 2 # frame, first n frames with double distance gap allowed
+    overlap_tolerance = 10 # frame, max overlap for bound tracks allowed, removes the cell if exceeds
     box_size = 4 # pix, edge length for replisome box
 
     # Logging in both file and console
@@ -79,9 +84,16 @@ def main():
                 trB = spots_to_tracks(spotsBound)
                 bound_track_total += len(list(trB.keys()))
                 trL_aligned = track_align(trL, max_frame_gap, max_distance_gap)
+
+                if(overlap_check(trB, overlap_tolerance)):
+                    print_log('Overlap Exceeds')
+                    continue
+
                 fits_pending = []
                 for entryB in trB:
                     trackBound = trB[entryB]
+                    if len(trackBound) < min_bound:
+                        continue
                     frB = [a[0] for a in trackBound]
                     frB_min, frB_max = frB[0], frB[-1]
                     fits = {}
@@ -108,7 +120,7 @@ def main():
             for entryL in trL:
                 entry = [i+1, k+1, t]
                 trackLife = trL[entryL]
-                rebinds, unsuccessful = rebind_record(trackLife)
+                rebinds, unsuccessful = rebind_record(trackLife, rebind_only_particles)
                 final_rebind_unsuccessful_count += unsuccessful
                 bound_count = bound_record(trackLife)
                 if(bound_count > 0): final_bound_count += bound_count
@@ -292,29 +304,38 @@ ANALYSIS: REBINDING
 # Analyze after each fit, tabulate all information about rebinding
 # format:
 #   [number, rs_prev, rs_next, rebinding time, avg speed (pix/fr)]
-def rebind_record(track):
+def rebind_record(track, skip0:bool):
     rebinds = []
     event = []
     active = False
     record = track[0][4] if len(track[0]) > 4 else -1
     f = 0
     i = 1
-    while(f < len(track)):
-        if(len(track[f]) > 4): active = True
-        if(len(event) > 0 and len(track[f]) > 4):
-            rebinds.append([i] + rebind_tabulate(event.copy(), record, track[f][4]))
-            event = []
-            record = track[f][4]
-            i += 1
-        elif(len(track[f]) <= 4 and active):
-            event.append(track[f])
-        elif(len(track[f]) > 4 and active):
-            record = track[f][4]
-        f += 1
     
+    # Treat 0 as diffusing
+    if(skip0):
+        track = track.copy()
+        for i in range(len(track)):
+            entry = track[i]
+            if(len(entry) > 4):
+                if(entry[4] == 0):
+                    track[i] = entry[:4]
+    
+    while(f < len(track)):
+            if(len(track[f]) > 4): active = True
+            if(len(event) > 0 and len(track[f]) > 4):
+                rebinds.append([i] + rebind_tabulate(event.copy(), record, track[f][4]))
+                event = []
+                record = track[f][4]
+                i += 1
+            elif(len(track[f]) <= 4 and active):
+                event.append(track[f])
+            elif(len(track[f]) > 4 and active):
+                record = track[f][4]
+            f += 1
+
     # unsuccessful event
-    if(len(event) > 0): unsuccessful = 1
-    else: unsuccessful = 0
+    unsuccessful = 1 if (len(event) > 0) else 0
     return rebinds, unsuccessful
 
 def rebind_tabulate(segment, prev, nxt):
@@ -324,7 +345,7 @@ def rebind_tabulate(segment, prev, nxt):
     if(len(segment) > 1):
         for i in range(1, len(segment)):
             distances.append(distance([segment[i-1][1], segment[i-1][2]], [segment[i][1], segment[i][2]]))
-    return [prev, nxt, rebinding_time, sum(distances)/rebinding_time]
+    return [prev, nxt, rebinding_time, sum(distances)/rebinding_time if (len(segment) > 1) else 1]
 
 '''
 ================================================================================================================
@@ -369,6 +390,18 @@ def dwell(track):
 TRACK CLASSIFICATION
 ================================================================================================================
 '''
+# Checking overlaps in bound tracks
+def overlap_check(trB:dict, overlap_tolerance):
+    tracks = list(trB.values())
+    frames = [[a[0] for a in tr] for tr in tracks]
+    data = [(min(fr), max(fr)) for fr in frames]
+    if(len(data) <= 1): return False
+    for i in range(len(data)):
+        for j in range(i + 1, len(data)):
+            if( data[i][1] < data[j][0] or data[j][1] < data[i][0]): continue
+            if(min(data[i][1] - data[j][0], data[j][1] - data[i][0]) > overlap_tolerance):
+                return True
+    return False
 
 # fits multiple tracks on lifetime tracks
 # Under distance threshold, longer the better.
