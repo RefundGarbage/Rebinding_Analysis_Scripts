@@ -10,9 +10,9 @@ import sys
 
 def main(): 
     # Note: rs -> replisome location, determined by DnaB signal
-    csv_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\AnalysisRebindCBCstart100noslow' # csv from trackmate
-    rs_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\particles_result' # *.tif.RESULT
-    mask_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\seg' # *.png
+    csv_path = 'C:\\Users\\noodl\\OneDrive\\Desktop\\MicroscopyTest\\Pr212dataSet\\AnalysisRebindCBCstart100noslow' # csv from trackmate
+    rs_path = 'C:\\Users\\noodl\\OneDrive\\Desktop\\MicroscopyTest\\Pr212dataSet\\particles_result' # *.tif.RESULT
+    mask_path = 'C:\\Users\\noodl\\OneDrive\\Desktop\\MicroscopyTest\\Pr212dataSet\\seg' # *.png
 
     # Additional Parameters
     rebind_only_particles = True # Skip bound outside particles for rebind event tabulation
@@ -23,6 +23,7 @@ def main():
     entry_tolerance = 2 # frame, first n frames with double distance gap allowed
     overlap_tolerance = 10 # frame, max overlap for bound tracks allowed, removes the cell if exceeds
     box_size = 4 # pix, edge length for replisome box
+    bound_decision_threshold = 0.8 # Percentage of frames within the bounding box to consider entire track as bound
 
     # Logging in both file and console
     log_file = csv_path + '\\_ColBD_LOG.txt'
@@ -102,14 +103,9 @@ def main():
                         trackLife = trL_aligned[c]
                         if((frB_max > trackLife[0][0] or frB_min < trackLife[-1][0]) and len(trackLife) > min_lifetrack):
                             fit = fit_bound_to_track(trackBound, trackLife, max_frame_gap, max_distance_gap, entry_tolerance)
-                            if(fit == None): continue
-                            if(rsS[k] == None):
-                                rs_index = 0
-                            else: 
-                                rs_index = fit_track_to_rs(trackBound, rsS[k], box_size)
-                            for entryF in fit:
-                                if(len(entryF) > 4):
-                                    entryF[4] = rs_index
+                            if(fit == None or len(fit) < min_bound): continue
+                            rs_index = find_track_on_rs(fit, rsS[k], box_size)
+                            fit = fit_track_on_rs(fit, rs_index, bound_decision_threshold, min_bound)
                             fits[c] = fit.copy()
                             n_fit += 1
                     fits_pending.append(fits)
@@ -615,21 +611,70 @@ def fit_bound_to_track(bound, life, frame_gap, distance_gap, entry_tolerance):
 def distance(p1, p2):
     return np.sqrt(np.power(p1[0]-p2[0], 2) + np.power(p1[1] - p2[1], 2))
 
-def fit_track_to_rs(spots, rs, box_size):
-    if(rs == None): return 0
-    x, y = track_bound_avg(spots)
-    # 7, 9; 8, 10; for rs location min,max
-    for i in range(len(rs)):
-        r = rs[i]
-        rx = r[2]
-        ry = r[3]
-        rxmin, rxmax = rx - box_size/2, rx + box_size/2
-        rymin, rymax = ry - box_size/2, ry + box_size/2
-        if((x >= rxmin and x <= rxmax) and
-            (y >= rymin and y <= rymax)): 
-            return i+1
-    return 0
+# Improved Track-RS detection, now repeating for each frame
+def find_track_on_rs(spots, rs, box_size):
+    if(rs == None):
+        return [0]*len(spots)
     
+    particles = [0]*len(spots)
+    # 7, 9; 8, 10; for rs location min,max
+    for k in range(len(spots)):
+        x = spots[k][1]
+        y = spots[k][2]
+        for i in range(len(rs)):
+            r = rs[i]
+            rx = r[2]
+            ry = r[3]
+            rxmin, rxmax = rx - box_size/2, rx + box_size/2
+            rymin, rymax = ry - box_size/2, ry + box_size/2
+            if((x >= rxmin and x <= rxmax) and
+                (y >= rymin and y <= rymax)): 
+                particles[k] = i + 1
+    return particles
+    
+def fit_track_on_rs(track, indices, bound_threshold, min_bound):
+    if((np.array(indices) == indices[0]).all()):
+        for entry in track:
+            entry[4] = indices[0]
+        return track
+    
+    bound_count = 0
+    bound_rs = 0
+    for i in indices:
+        if(i > 0): 
+            bound_count += 1
+            bound_rs = i
+    if(float(bound_count) / len(indices) > bound_threshold):
+        for entry in track:
+            entry[4] = bound_rs
+        return track
+    
+    k = 0
+    record = indices[0]
+    event = []
+    indices.append(-1)
+    while k < len(indices):
+        if(indices[k] == record):
+            event.append(k)
+            record = indices[k]
+        else:
+            if(record == 0):
+                for i in event:
+                    track[i][4] = -1
+                event = [k]
+                record = indices[k]
+            elif(not (record == 0)):
+                if(len(event) < min_bound):
+                    for i in event:
+                        track[i][4] = -1
+                else:
+                    for i in event:
+                        track[i][4] = record
+                event = [k]
+                record = indices[k]
+        k += 1
+    return track
+
 def track_bound_avg(spots):
     mean = np.mean(np.array(spots), axis=0)
     return (mean[1], mean[2])
