@@ -321,6 +321,9 @@ def rebind_record(track, skip0:bool):
     while(f < len(track)):
             if(len(track[f]) > 4): active = True
             if(len(event) > 0 and len(track[f]) > 4):
+                # Bug checking
+                if(record == -1 or track[f][4] == -1):
+                    print('ERROR')
                 rebinds.append([i] + rebind_tabulate(event.copy(), record, track[f][4]))
                 event = []
                 record = track[f][4]
@@ -648,32 +651,11 @@ def fit_track_on_rs(track, indices, bound_threshold, min_bound):
         for entry in track:
             entry[4] = bound_rs
         return track
-    
-    k = 0
-    record = indices[0]
-    event = []
-    indices.append(-1)
-    while k < len(indices):
-        if(indices[k] == record):
-            event.append(k)
-            record = indices[k]
-        else:
-            if(record == 0):
-                for i in event:
-                    track[i][4] = -1
-                event = [k]
-                record = indices[k]
-            elif(not (record == 0)):
-                if(len(event) < min_bound):
-                    for i in event:
-                        track[i][4] = -1
-                else:
-                    for i in event:
-                        track[i][4] = record
-                event = [k]
-                record = indices[k]
-        k += 1
-    return track
+    else:
+        bound_rs = max(indices, key=indices.count)
+        for entry in track:
+            entry[4] = bound_rs
+        return track
 
 def track_bound_avg(spots):
     mean = np.mean(np.array(spots), axis=0)

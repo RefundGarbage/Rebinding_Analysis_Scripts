@@ -10,12 +10,12 @@ import sys
 
 def main(): 
     # Note: rs -> replisome location, determined by DnaB signal
-    csv_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\AnalysisRebindCBCstart100noslow' # csv from trackmate
-    rs_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\particles_result' # *.tif.RESULT
-    mask_path = 'F:\\DiffusionAnalysis\\Pr212dataSet\\seg' # *.png
+    csv_path = 'C:\\Users\\noodl\\OneDrive\\Desktop\\MicroscopyTest\\Pr212dataSet\\AnalysisRebindCBCstart100noslow' # csv from trackmate
+    rs_path = 'C:\\Users\\noodl\\OneDrive\\Desktop\\MicroscopyTest\\Pr212dataSet\\particles_result' # *.tif.RESULT
+    mask_path = 'C:\\Users\\noodl\\OneDrive\\Desktop\\MicroscopyTest\\Pr212dataSet\\seg' # *.png
 
     # Additional Parameters
-    rebind_only_particles = True # Skip bound outside particles for rebind event tabulation
+    rebind_only_particles = False # Skip bound outside particles for rebind event tabulation
     min_bound = 2 # min # frame for bound track
     min_lifetrack = 50 # min # frame for lifetime track
     max_frame_gap = 4 # frame, max frame gap allowed
