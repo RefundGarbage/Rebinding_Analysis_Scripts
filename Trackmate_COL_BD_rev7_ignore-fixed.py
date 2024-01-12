@@ -11,21 +11,21 @@ import sys
 def main(): 
     # Note: rs -> replisome location, determined by DnaB signal
 
-    csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'  # csv from trackmate
-    rs_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\particles_result'  # *.tif.RESULT
-    mask_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\_seg'  # *.png
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\pr208' # csv from trackmate
+    #rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR208\\particles\\particles_result' # *.tif.RESULT
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr208\\100ms' # *.png
 
-    #csv_path = 'D:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR212' # csv from trackmate
-    #rs_path = 'D:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR212\\particles\\particles_result\\set1' # *.tif.RESULT
-    #mask_path = 'D:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr212\\100ms\\set1' # *.png
+    csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR212' # csv from trackmate
+    rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR212\\particles\\particles_result\\set1' # *.tif.RESULT
+    mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr212\\100ms\\set1' # *.png
 
     #csv_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\pr208N\\AnalysisRebindCBC_start100_Quality5' # csv from trackmate
     #rs_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\particle\\small1diam\\pr208N_particles_result_1diam' # *.tif.RESULT
     #mask_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr208N' # *.png
 
-    #csv_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\pr212\\AnalysisRebindCBC_start100_Quality5' # csv from trackmate
-    #rs_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\particle\\small1diam\\pr212_particles_result_1diam' # *.tif.RESULT
-    #mask_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr212' # *.png
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\pr212\\PR212_AnalysisRebindCBC_start100_Quality5' # csv from trackmate
+    #rs_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\particle\\small1diam\\pr212_particles_result_1diam' # *.tif.RESULT
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr212' # *.png
 
     #csv_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\pr173\\new\AnalysisRebindCBC_start100_Quality5' # csv from trackmate
     #rs_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\particle\\original\\pr173_particles_result' # *.tif.RESULT
@@ -35,14 +35,14 @@ def main():
 
     #NEW
 
-    #csv_path = 'D:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Corrected-Images\\Images\\_timelapse\\pr208\\AnalysisRebindCBC_start100_Q' # csv from trackmate
-    #rs_path = 'D:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Corrected-Images\\Images\\_particle\\start\\particles_result\\pr208' # *.tif.RESULT
-    #mask_path = 'D:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Corrected-Images\\Images\\_seg\\Pr208' # *.png
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Corrected-Images\\Images\\_timelapse\\pr208\\AnalysisRebindCBC_start100_Q' # csv from trackmate
+    #rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Corrected-Images\\Images\\_particle\\start\\particles_result\\pr208' # *.tif.RESULT
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Corrected-Images\\Images\\_seg\\Pr208' # *.png
 
     
-    #csv_path = 'D:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Corrected-Images\\Images\\_timelapse\\pr212\\AnalysisRebindCBC_start100_Q\\pr212' # csv from trackmate
-    #rs_path = 'D:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Corrected-Images\\Images\\_particle\\start\\particles_result\\pr212' # *.tif.RESULT
-    #mask_path = 'D:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Corrected-Images\\Images\\_seg\\Pr212' # *.png
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Corrected-Images\\Images\\_timelapse\\pr212\\AnalysisRebindCBC_start100_Q\\pr212' # csv from trackmate
+    #rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Corrected-Images\\Images\\_particle\\start\\particles_result\\pr212' # *.tif.RESULT
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Corrected-Images\\Images\\_seg\\Pr212' # *.png
 
 
 
@@ -79,7 +79,8 @@ def main():
     final_result = []
     final_rs = []
     final_rebind = []
-    final_rebind_spots = []
+    final_rebind_spots_same = []
+    final_rebind_spots_diff = []
     final_rebind_unsuccessful_count = 0
     final_bound_count = 0
     final_bound_failed_count = 0
@@ -157,12 +158,15 @@ def main():
             for entryL in trL:
                 entry = [i+1, k+1, t]
                 trackLife = trL[entryL]
-                rebinds, unsuccessful, rb_events = rebind_record_proximity(trackLife, rebind_distance)
+                rebinds, unsuccessful, rb_events_same, rb_events_diff = rebind_record_proximity(trackLife, rebind_distance)
                 final_rebind_unsuccessful_count += unsuccessful
                 bound_count = bound_record(trackLife)
-                if (len(rb_events) > 0):
-                    for rb_event in rb_events:
-                        final_rebind_spots.append([([len(final_rebind_spots)] + rb_line) for rb_line in rb_event])
+                if (len(rb_events_same) > 0):
+                    for rb_event in rb_events_same:
+                        final_rebind_spots_same.append([([len(final_rebind_spots_same)] + rb_line) for rb_line in rb_event])
+                if (len(rb_events_diff) > 0):
+                    for rb_event in rb_events_diff:
+                        final_rebind_spots_diff.append([([len(final_rebind_spots_diff)] + rb_line) for rb_line in rb_event])
                 if(bound_count > 0): final_bound_count += bound_count
                 else: final_bound_failed_count += 1
                 label_spots(trackLife, (0,), -1)
@@ -316,10 +320,15 @@ def main():
                 fout.write(line)
 
     # output, rebinding events as spots
-    final_rebind_spots_formatted = []
-    for rb_event in final_rebind_spots:
-        final_rebind_spots_formatted += rb_event
-    csv_write(csv_path + '\\_ColBD_rebinding_spots.csv', final_rebind_spots_formatted)
+    final_rebind_spots_same_formatted = []
+    for rb_event in final_rebind_spots_same:
+        final_rebind_spots_same_formatted += rb_event
+    csv_write(csv_path + '\\_ColBD_rebinding_spots_same.csv', final_rebind_spots_same_formatted)
+
+    final_rebind_spots_diff_formatted = []
+    for rb_event in final_rebind_spots_diff:
+        final_rebind_spots_diff_formatted += rb_event
+    csv_write(csv_path + '\\_ColBD_rebinding_spots_diff.csv', final_rebind_spots_diff_formatted)
 
     # output, fixed-particles and colocalized
     csv_write(csv_path + '\\_ColBD_fixed-particles.csv', final_rs)
@@ -362,7 +371,8 @@ ANALYSIS: REBINDING
 def rebind_record_proximity(track, rebind_distance):
     rebinds = []
     event = []
-    events = []
+    events_same = []
+    events_diff = []
     active = False
     record = track[0][4] if len(track[0]) > 4 else -1
     record_pos = [track[0][1], track[0][2]]
@@ -375,10 +385,11 @@ def rebind_record_proximity(track, rebind_distance):
                 dist = distance(pos, record_pos)
                 if(dist > rebind_distance):
                     prev, nxt = 1, 2
+                    events_diff.append(event.copy())
                 else:
                     prev, nxt = 1, 1
+                    events_same.append(event.copy())
                 rebinds.append([i] + rebind_tabulate(event.copy(), prev, nxt) + [dist, record_pos[0], record_pos[1], pos[0], pos[1]])
-                events.append(event.copy())
                 event = []
                 record = track[f][4]
                 i += 1
@@ -392,7 +403,7 @@ def rebind_record_proximity(track, rebind_distance):
 
     # unsuccessful event
     unsuccessful = 1 if (len(event) > 0) else 0
-    return rebinds, unsuccessful, events
+    return rebinds, unsuccessful, events_same, events_diff
 
 def rebind_tabulate(segment, prev, nxt):
     frames = [s[0] for s in segment]
