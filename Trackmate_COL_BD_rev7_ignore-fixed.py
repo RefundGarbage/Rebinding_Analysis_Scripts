@@ -11,13 +11,13 @@ import sys
 def main(): 
     # Note: rs -> replisome location, determined by DnaB signal
 
-    #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\pr208' # csv from trackmate
-    #rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR208\\particles\\particles_result' # *.tif.RESULT
-    #mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr208\\100ms' # *.png
+    csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\pr208' # csv from trackmate
+    rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR208\\particles\\particles_result' # *.tif.RESULT
+    mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr208\\100ms' # *.png
 
-    csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR212' # csv from trackmate
-    rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR212\\particles\\particles_result\\set1' # *.tif.RESULT
-    mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr212\\100ms\\set1' # *.png
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR212' # csv from trackmate
+    #rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR212\\particles\\particles_result\\set1' # *.tif.RESULT
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr212\\100ms\\set1' # *.png
 
     #csv_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\pr208N\\AnalysisRebindCBC_start100_Quality5' # csv from trackmate
     #rs_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\particle\\small1diam\\pr208N_particles_result_1diam' # *.tif.RESULT
@@ -27,11 +27,16 @@ def main():
     #rs_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\particle\\small1diam\\pr212_particles_result_1diam' # *.tif.RESULT
     #mask_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr212' # *.png
 
-    #csv_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\pr173\\new\AnalysisRebindCBC_start100_Quality5' # csv from trackmate
-    #rs_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\particle\\original\\pr173_particles_result' # *.tif.RESULT
-    #mask_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr173' # *.png
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\AnalysisRebindCBC_5min_Copy\\pr173\\bound' # csv from trackmate
+    #rs_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\particle\\original\\pr173_particles_result' # *.tif.RESULT
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr173' # *.png
 
-    
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\pr173\\new' # csv from trackmate
+    #rs_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\particle\\original\\pr173_particles_result' # *.tif.RESULT
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr173' # *.png
+
+
 
     #NEW
 
@@ -53,7 +58,7 @@ def main():
     max_frame_gap =     1 # frame, max frame gap allowed
     max_distance_gap =  1 # pix, max distance allowed for lifetime/bound difference
     entry_tolerance =   1 # frame, first n frames with double distance gap allowed
-    overlap_tolerance = 10 # frame, max overlap for bound tracks allowed, removes the cell if exceeds
+    overlap_tolerance = 20 # frame, max overlap for bound tracks allowed, removes the cell if exceeds
     box_size =          1 # pix, edge length for replisome box
     rebind_distance =   1.2 # pix, max distance for rebinding tabulation (considered same particle)
 
