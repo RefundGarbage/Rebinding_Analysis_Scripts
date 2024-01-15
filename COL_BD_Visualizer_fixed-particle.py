@@ -5,8 +5,6 @@ import skimage
 import os
 from natsort import natsorted
 import time
-from tqdm import tqdm
-from tqdm import trange
 import tifffile
 import csv
 import logging
@@ -14,9 +12,9 @@ import shutil
 import sys
 
 def main():
-    col_bd_fixed = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking\\_ColBD_fixed-particles.csv'
-    col_bd_spots = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking\\_ColBD_spots.csv'
-    mask_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\_seg'  # *.png
+    col_bd_fixed = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\pr208\\_ColBD_fixed-particles.csv'
+    col_bd_spots = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\pr208\\_ColBD_spots.csv'
+    mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr208\\100ms'  # *.png
 
     max_frame = 2000
 
@@ -55,12 +53,12 @@ def main():
                              colors['Diffuse_Center'], colors['Diffuse_Outer'])
 
         video = np.swapaxes(video, 1, 2).astype('uint8')
-        tifffile.imwrite(outpath + str(i+1) + ".tif", video, imagej=True, photometric='rgb')
+        tifffile.imwrite(outpath + str(i+1) + ".tif", video, imagej=True, photometric='rgb', metadata={'axes': 'TYXS', 'mode': 'composite'})
     return
 
 def parse_tracks(video, tracks_all, vid_index, color_bd, color_bd_outer, color_dif, color_dif_outer):
     tracks = slice_for_index(tracks_all, 0, vid_index)
-    for iter in trange(len(tracks), desc='Tracks'):
+    for iter in range(len(tracks)):
         spot = tracks[iter]
         is_dif = (spot[7] == -1)
         frame, x, y = int(spot[3]), int(np.round(spot[4])), int(np.round(spot[5]))
@@ -76,7 +74,7 @@ def parse_tracks(video, tracks_all, vid_index, color_bd, color_bd_outer, color_d
 
 def parse_fixed_spots(video, particles_all, max_frame, vid_index, color_particle):
     particles = slice_for_index(particles_all, 0, vid_index)
-    for iter in trange(len(particles), desc='Fixed Particles'):
+    for iter in range(len(particles)):
         particle = particles[iter]
         nx, ny, xx, xy = particle[8:12].astype(int).tolist()
         for i in np.arange(nx, xx + 1, 1):
@@ -88,12 +86,12 @@ def parse_fixed_spots(video, particles_all, max_frame, vid_index, color_particle
 # Video is going to be a width by height by length array with rgb color
 def inintialize_video(mask, outline, cell_color, cell_border_color):
     video = np.empty(shape=(mask.shape[0], mask.shape[1], 3))
-    for i in trange(mask.shape[0], desc='Mask'):
+    for i in range(mask.shape[0]):
         for j in range(mask.shape[1]):
             if not mask[i][j] == 0:
                 video[i][j] = cell_color.copy()
 
-    for i in trange(len(outline), desc='Outline'):
+    for i in range(len(outline)):
         x = outline[i][::2]
         y = outline[i][1::2]
         for k in range(len(x)):
