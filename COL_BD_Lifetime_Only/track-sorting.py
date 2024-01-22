@@ -12,7 +12,6 @@ def main():
     csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'  # csv from trackmate
     mask_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\_seg'  # *.png
 
-
     # Some parameters
     allowed_gap_max = 4
     allowed_track_length_min = 10
