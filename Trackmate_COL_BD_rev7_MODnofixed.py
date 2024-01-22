@@ -10,15 +10,19 @@ import sys
 
 def main(): 
     # Note: rs -> replisome location, determined by DnaB signal
-    
 
-    csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\pr208' # csv from trackmate
-    rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR208\\particles\\particles_result' # *.tif.RESULT
-    mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr208\\100ms' # *.png
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\S100q5strictB21' # csv from trackmate
+    #rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR208\\particles\\particles_result' # *.tif.RESULT
+    #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\seg' # *.png
 
-    #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR212' # csv from trackmate
-    #rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR212\\particles\\particles_result\\set1' # *.tif.RESULT
-    #mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr212\\100ms\\set1' # *.png
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\pr208' # csv from trackmate
+    #rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR208\\particles\\particles_result' # *.tif.RESULT
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr208\\100ms' # *.png
+
+
+    csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR212' # csv from trackmate
+    rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR212\\particles\\particles_result\\set1' # *.tif.RESULT
+    mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr212\\100ms\\set1' # *.png
 
     #csv_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\pr208N\\AnalysisRebindCBC_start100_Quality5' # csv from trackmate
     #rs_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\particle\\small1diam\\pr208N_particles_result_1diam' # *.tif.RESULT
@@ -54,14 +58,14 @@ def main():
 
 
     # Additional Parameters
-    min_bound =         7 # min # frame for bound track
+    min_bound =         5 # min # frame for bound track
     min_lifetrack =     500 # min # frame for lifetime track
-    max_frame_gap =     1 # frame, max frame gap allowed
+    max_frame_gap =     2 # frame, max frame gap allowed
     max_distance_gap =  1 # pix, max distance allowed for lifetime/bound difference
     entry_tolerance =   1 # frame, first n frames with double distance gap allowed
     overlap_tolerance = 20 # frame, max overlap for bound tracks allowed, removes the cell if exceeds
     box_size =          1 # pix, edge length for replisome box
-    rebind_distance =   1.2 # pix, max distance for rebinding tabulation (considered same particle)
+    rebind_distance =   3.0 # pix, max distance for rebinding tabulation (considered same particle)
 
     # Logging in both file and console
     log_file = csv_path + '\\_ColBD_LOG.txt'
@@ -77,13 +81,13 @@ def main():
     # Debug Note: csv_sorted: [sB, sL, tB, tL] per entry
     csv_sorted = csv_name_sort_loose(csv_path)
     spotKeys = natsorted(list(csv_sorted.keys()))
-    rS = get_rs_with_ext(rs_path, 'tif_Results.csv')
+    # rS = get_rs_with_ext(rs_path, 'tif_Results.csv')
     masks = natsorted(get_file_names_with_ext(mask_path, 'png'))
 
     # masks = csv_mask_match(csv_sorted, spotKeys, masks)
 
     final_result = []
-    final_rs = []
+    # final_rs = []
     final_rebind = []
     final_rebind_spots_same = []
     final_rebind_spots_diff = []
@@ -97,7 +101,7 @@ def main():
         print_log('Processing:', masks[i])
         mask = np.swapaxes(imgio.imread(masks[i]), 0, 1)
         n_cell = np.max(mask)
-        rsS = rs_recognition(rS[i], mask, n_cell)
+        # rsS = rs_recognition(rS[i], mask, n_cell)
 
         sB = natsorted(csv_sorted[spotKeys[i]][0])
         sL = natsorted(csv_sorted[spotKeys[i]][1])
@@ -146,13 +150,13 @@ def main():
                         if((frB_max > trackLife[0][0] or frB_min < trackLife[-1][0]) and len(trackLife) > min_lifetrack):
                             fit = fit_bound_to_track(trackBound, trackLife, max_frame_gap, max_distance_gap, entry_tolerance)
                             if(fit == None): continue
-                            if(rsS[k] == None):
-                                rs_index = 0
-                            else: 
-                                rs_index = fit_track_to_rs(trackBound, rsS[k], box_size)
+                            # if(rsS[k] == None):
+                            #     rs_index = 0
+                            # else: 
+                            #     rs_index = fit_track_to_rs(trackBound, rsS[k], box_size)
                             for entryF in fit:
                                 if(len(entryF) > 4):
-                                    entryF[4] = rs_index
+                                    entryF[4] = 1
                             fits[c] = fit.copy()
                             n_fit += 1
                     fits_pending.append(fits)
@@ -187,13 +191,13 @@ def main():
                 t += 1
 
         # final_rs
-        for r in range(len(rsS)):
-            if(rsS[r] == None): continue
-            entry = [i+1, r+1]
-            s = 1
-            for spot in rsS[r]:
-                final_rs.append(entry + [s] + list(spot[2:]))
-                s += 1
+        # for r in range(len(rsS)):
+        #     if(rsS[r] == None): continue
+        #     entry = [i+1, r+1]
+        #     s = 1
+        #     for spot in rsS[r]:
+        #         final_rs.append(entry + [s] + list(spot[2:]))
+        #         s += 1
 
     print_log('# Track Bound: ', bound_track_total)
 
@@ -337,7 +341,7 @@ def main():
     csv_write(csv_path + '\\_ColBD_rebinding_spots_diff.csv', final_rebind_spots_diff_formatted)
 
     # output, fixed-particles and colocalized
-    csv_write(csv_path + '\\_ColBD_fixed-particles.csv', final_rs)
+    # csv_write(csv_path + '\\_ColBD_fixed-particles.csv', final_rs)
     csv_write(csv_path + '\\_ColBD_spots.csv', final_result)
     csv_write(csv_path + '\\_ColBD_rebinding.csv', final_rebind)
     return
@@ -743,6 +747,8 @@ def spots_to_tracks(spots):
 INPUT FORMATTING
 ================================================================================================================
 '''
+# In case some videos have no tracks
+# TODO but not important (At least for now)
 def csv_mask_match(csv, videos, masks):
     mnames = {}
     vnames = {}
