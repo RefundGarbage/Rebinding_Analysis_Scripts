@@ -91,7 +91,7 @@ def main():
                     final_list_track_spots.append(entry)
 
     # Output
-    print_log('Saving to csv:', output_path + '\\ColBD_LIFE_tracks.xlsx')
+    print_log('Saving to csv:', output_path + '\\ColBD_LIFE_tracks.csv')
     final_list_track_spots = pd.DataFrame(final_list_track_spots, columns=final_list_track_spots_columns)
     final_list_track_spots.to_csv(output_path + '\\_ColBD_LIFE_tracks.csv')
     return
