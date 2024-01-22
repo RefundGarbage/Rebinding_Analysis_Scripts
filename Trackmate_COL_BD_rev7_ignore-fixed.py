@@ -743,8 +743,6 @@ def spots_to_tracks(spots):
 INPUT FORMATTING
 ================================================================================================================
 '''
-# In case some videos have no tracks
-# TODO but not important (At least for now)
 def csv_mask_match(csv, videos, masks):
     mnames = {}
     vnames = {}
