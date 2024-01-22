@@ -10,6 +10,7 @@ import sys
 
 def main(): 
     # Note: rs -> replisome location, determined by DnaB signal
+    
 
     csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\pr208' # csv from trackmate
     rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR208\\particles\\particles_result' # *.tif.RESULT

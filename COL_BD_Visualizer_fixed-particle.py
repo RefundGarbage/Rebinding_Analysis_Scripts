@@ -47,7 +47,7 @@ def main():
             for line in file:
                 outline.append(np.array(line.split(',')).astype(int))
         video = inintialize_video(mask, outline, colors['Cell_Background'], colors['Cell_Border'])
-        video = parse_fixed_spots(video, particles, max_frame, i+1, colors['Particle'])
+        video = parse_fixed_spots(video, particles, max_frame, i+1, colors['Particle']) # comment when no fixed spt
         video = parse_tracks(video, tracks, i+1,
                              colors['Bound_Center'], colors['Bound_Outer'],
                              colors['Diffuse_Center'], colors['Diffuse_Outer'])
@@ -96,6 +96,7 @@ def inintialize_video(mask, outline, cell_color, cell_border_color):
         y = outline[i][1::2]
         for k in range(len(x)):
             video[x[k]][y[k]] = cell_border_color
+    #video = np.repeat(video[np.newaxis, :, :, :], max_frame, axis=0)
     return video
 
 def slice_for_index(array, key, index):

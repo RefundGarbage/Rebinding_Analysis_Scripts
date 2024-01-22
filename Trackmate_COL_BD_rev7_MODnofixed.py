@@ -11,13 +11,18 @@ import sys
 def main(): 
     # Note: rs -> replisome location, determined by DnaB signal
 
-    csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\pr208' # csv from trackmate
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\S100q5strictB21' # csv from trackmate
     #rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR208\\particles\\particles_result' # *.tif.RESULT
-    mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr208\\100ms' # *.png
+    #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\seg' # *.png
 
-    #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR212' # csv from trackmate
-    #rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR212\\particles\\particles_result\\set1' # *.tif.RESULT
-    #mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr212\\100ms\\set1' # *.png
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\pr208' # csv from trackmate
+    #rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR208\\particles\\particles_result' # *.tif.RESULT
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr208\\100ms' # *.png
+
+
+    csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR212' # csv from trackmate
+    rs_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\PR212\\particles\\particles_result\\set1' # *.tif.RESULT
+    mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr212\\100ms\\set1' # *.png
 
     #csv_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\pr208N\\AnalysisRebindCBC_start100_Quality5' # csv from trackmate
     #rs_path = 'D:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\particle\\small1diam\\pr208N_particles_result_1diam' # *.tif.RESULT
@@ -53,14 +58,14 @@ def main():
 
 
     # Additional Parameters
-    min_bound =         7 # min # frame for bound track
+    min_bound =         5 # min # frame for bound track
     min_lifetrack =     500 # min # frame for lifetime track
-    max_frame_gap =     1 # frame, max frame gap allowed
+    max_frame_gap =     2 # frame, max frame gap allowed
     max_distance_gap =  1 # pix, max distance allowed for lifetime/bound difference
     entry_tolerance =   1 # frame, first n frames with double distance gap allowed
     overlap_tolerance = 20 # frame, max overlap for bound tracks allowed, removes the cell if exceeds
     box_size =          1 # pix, edge length for replisome box
-    rebind_distance =   1.2 # pix, max distance for rebinding tabulation (considered same particle)
+    rebind_distance =   3.0 # pix, max distance for rebinding tabulation (considered same particle)
 
     # Logging in both file and console
     log_file = csv_path + '\\_ColBD_LOG.txt'
