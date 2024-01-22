@@ -4,10 +4,8 @@ from skimage import io as imgio
 import time
 import os
 from natsort import natsorted
-import csv
 import logging
 import shutil
-import xlsxwriter
 
 
 def main():
@@ -18,12 +16,21 @@ def main():
     # Some parameters
     allowed_gap_max = 4
     allowed_track_length_min = 10
+    dist_range = 5
+    dist_none = float('inf')
 
     # Output Format
     final_list_track_spots = []
     final_list_track_spots_columns = [
         'Video #', 'Video Name', 'Cell', 'Track', 'Frame', 'x', 'y', 'Intensity'
     ]
+    dist_index = list(np.arange(-1*dist_range, dist_range + 1, 1))
+    del dist_index[dist_range]
+    dist_columns = np.array(dist_index).astype(str)
+    for i in range(len(dist_columns)):
+        dist_columns[i] = 'Dist ' + dist_columns[i]
+    dist_columns = list(dist_columns)
+    final_list_track_spots_columns += dist_columns
 
     output_path = csv_path + '\\_ColBD_LIFE'
     try:
@@ -78,14 +85,15 @@ def main():
 
             info = [i + 1, csv_keys[i], j + 1]
             for k in range(len(tracks_ind)):
+                tracks_ind[k] = track_distance_tabulate(tracks_ind[k], dist_index, dist_none)
                 for spot in tracks_ind[k]:
                     entry = info + [k + 1] + spot
                     final_list_track_spots.append(entry)
 
     # Output
+    print_log('Saving to csv:', output_path + '\\ColBD_LIFE_tracks.xlsx')
     final_list_track_spots = pd.DataFrame(final_list_track_spots, columns=final_list_track_spots_columns)
-    final_list_track_spots.to_excel(output_path + '\\_ColBD_LIFE_tracks.xlsx', engine='xlsxwriter')
-
+    final_list_track_spots.to_csv(output_path + '\\_ColBD_LIFE_tracks.csv')
     return
 
 '''
@@ -94,9 +102,20 @@ TRACKS
 ================================================================================================================
 '''
 
-
 def distance(p1, p2):
     return np.sqrt(np.power(p1[0] - p2[0], 2) + np.power(p1[1] - p2[1], 2))
+
+# Distance Calculations appended to the end of spots
+def track_distance_tabulate(track, indices, dist_none):
+    for i in range(len(track)):
+        for j in range(len(indices)):
+            if i + indices[j] < 0 or i + indices[j] >= len(track):
+                track[i].append(dist_none)
+            else:
+                track[i].append(distance(
+                    track[i][1:3], track[i + indices[j]][1:3]
+                ))
+    return track
 
 # Split tracks based on gaps and filter based on length
 def track_splitting_filtered(track, gap_max, len_min):
