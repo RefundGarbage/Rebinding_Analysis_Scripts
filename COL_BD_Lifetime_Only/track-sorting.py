@@ -9,12 +9,12 @@ import shutil
 
 
 def main():
-    csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'  # csv from trackmate
-    mask_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\_seg'  # *.png
+    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\test\\SpotsAll20'  # csv from trackmate
+    mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\test\\seg'  # *.png
 
     # Some parameters
     allowed_gap_max = 4
-    allowed_track_length_min = 10
+    allowed_track_length_min = 5
     dist_range = 5
     dist_none = float('inf')
 
