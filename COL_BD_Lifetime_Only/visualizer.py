@@ -17,7 +17,6 @@ def main():
     mask_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\_seg'  # *.png
 
     max_frame = 2000
-    use_strict = False
 
     colors = {
         'Cell_Background': [211, 211, 211],
@@ -26,7 +25,8 @@ def main():
         'Bound_Outer': [171, 122, 235],
         'Diffuse_Center': [250, 57, 50],
         'Diffuse_Outer': [250, 121, 116],
-        'Particle': [6, 186, 177]
+        'Constricted_Center': [2, 60, 161],
+        'Constricted_Outer': [76, 110, 168]
     }
 
     masks = natsorted(get_file_names_with_ext(mask_path, 'png'))
@@ -49,29 +49,28 @@ def main():
             for line in file:
                 outline.append(np.array(line.split(',')).astype(int))
         video = inintialize_video(mask, outline, max_frame, colors['Cell_Background'], colors['Cell_Border'])
-        video = parse_tracks(video, tracks_by_video[i], 'StrictBound' if use_strict else 'RelaxedBound',
-                             colors['Bound_Center'], colors['Bound_Outer'],
-                             colors['Diffuse_Center'], colors['Diffuse_Outer'])
+        video = parse_tracks(video, tracks_by_video[i], 'Bound', colors)
 
         video = np.swapaxes(video, 1, 2).astype('uint8')
-        save_path = outpath + '\\' + str(i+1) + ('s' if use_strict else 'r') + ".tif"
+        save_path = outpath + '\\' + str(i+1) + 'b' + ".tif"
         print('\t-> Saved to:', save_path)
         tifffile.imwrite(save_path,
                          video, imagej=True, photometric='rgb', metadata={'axes': 'TYXS', 'mode': 'composite'})
     return
 
-def parse_tracks(video, tracks_all, key, color_bd, color_bd_outer, color_dif, color_dif_outer):
+def parse_tracks(video, tracks_all, key, colors):
     for tracks in tracks_all:
         for iter in range(len(tracks.index)):
             spot = tracks.iloc[iter]
-            is_dif = (spot[key] == 0)
+            mark = spot[key]
             frame, x, y = int(spot['Frame']), int(np.round(spot['x'])), int(np.round(spot['y']))
             if(frame >= video.shape[0]): continue # not really necessary
             outer = spot_index(x, y)
-            video[frame][x][y] = color_dif.copy() if is_dif else color_bd.copy()
+            video[frame][x][y] = colors['Diffuse_Center'].copy() if mark == 0 else colors['Constricted_Center'].copy() if mark == 1 else colors['Bound_Center'].copy()
             for x1, y1 in outer:
                 try:
-                    video[frame][x1][y1] = color_dif_outer.copy() if is_dif else color_bd_outer.copy()
+                    video[frame][x1][y1] = colors['Diffuse_Outer'].copy() if mark == 0 else colors['Constricted_Outer'].copy() if mark == 1 else colors['Bound_Outer'].copy()
+
                 except IndexError:
                     continue
     return video
