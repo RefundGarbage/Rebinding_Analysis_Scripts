@@ -11,8 +11,11 @@ def main():
     csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'  # csv from trackmate
 
     # Some parameters
-    rebind_distance = 2.0
-    relaxed = True
+    rebind_distance = 2.0 # Determines same/diff particles
+    min_time_bound_strict = 2
+    min_time_bound_constricted = 2
+    min_time_rebinding_relaxed = 2
+    min_time_rebinding_strict = 2
 
     output_path = csv_path + '\\_ColBD_LIFE'
     log_file = output_path + '\\_ColBD_LIFE_LOG_rebind.txt'
@@ -45,8 +48,8 @@ def main():
         track = list(tracks[i][['Frame', 'x', 'y', 'Bound']].to_numpy())
 
         # Relaxed
-        rb, rb_us, rb_same, rb_diff = rebind_record_proximity(track, rebind_distance, lambda x: not x < 1)
-        bd = bound_record(track, lambda x: x == 1)
+        rb, rb_us, rb_same, rb_diff = rebind_record_proximity(track, rebind_distance, lambda x: not x < 1, min_time_rebinding_relaxed)
+        bd = bound_record(track, lambda x: x == 1, min_time_bound_constricted)
         if(len(rb) > 0):
             rebind_relaxed += rb
         rebind_relaxed_unsuccessful += rb_us
@@ -58,8 +61,8 @@ def main():
             bound_constricted += bd
 
         # Strict
-        rb, rb_us, rb_same, rb_diff = rebind_record_proximity(track, rebind_distance, lambda x: not x < 2)
-        bd = bound_record(track, lambda x: x == 2)
+        rb, rb_us, rb_same, rb_diff = rebind_record_proximity(track, rebind_distance, lambda x: not x < 2, min_time_rebinding_strict)
+        bd = bound_record(track, lambda x: x == 2, min_time_bound_strict)
         if(len(rb) > 0):
             rebind_strict += rb
         rebind_strict_unsuccessful += rb_us
@@ -142,7 +145,7 @@ def event_format_trackmate(events):
             i += 1
     return formatted
 
-def bound_record(track, criteria):
+def bound_record(track, criteria, min_time):
     bound = []
     record = track[0][3]
     event = []
@@ -153,14 +156,21 @@ def bound_record(track, criteria):
                 event.append(track[f])
         else:
             if(len(event) > 0):
-                bound.append(event.copy())
-                event = []
+                time = 1 if len(event) == 1 else int(event[-1][0] - event[0][0] + 1)
+                if(time < min_time):
+                    event = []
+                else:
+                    bound.append(event.copy())
+                    event = []
             if(criteria(track[f][3])):
                 event.append(track[f])
             record = track[f][3]
         f += 1
     if(len(event) > 0):
-        bound.append(event.copy())
+        time = 1 if len(event) == 1 else int(event[-1][0] - event[0][0] + 1)
+        if (time < min_time):
+            event = []
+        else: bound.append(event.copy())
 
     result = []
     for event in bound:
@@ -170,36 +180,35 @@ def bound_record(track, criteria):
             result.append(int(event[-1][0] - event[0][0] + 1))
     return result
 
-def rebind_record_proximity(track, rebind_distance, criteria):
+def rebind_record_proximity(track, rebind_distance, criteria, min_time):
     rebinds = []
     event = []
     events_same = []
     events_diff = []
     active = False
-    record = track[0][3]
     record_pos = [track[0][1], track[0][2]]
     f = 0
-    i = 1
 
     while (f < len(track)):
         if (len(event) > 0 and criteria(track[f][3])):
             pos = [track[f][1], track[f][2]]
             dist = distance(pos, record_pos)
-            if (dist > rebind_distance):
-                prev, nxt = 1, 2
-                events_diff.append(event.copy())
+            table = rebind_tabulate(event.copy(), 0, 0) # just to get the time
+            if(table[2] < min_time): # min_time threshold
+                event = []
             else:
-                prev, nxt = 1, 1
-                events_same.append(event.copy())
-            rebinds.append(
-                rebind_tabulate(event.copy(), prev, nxt) + [dist, record_pos[0], record_pos[1], pos[0], pos[1]])
-            event = []
-            record = track[f][3]
-            i += 1
+                if (dist > rebind_distance):
+                    prev, nxt = 1, 2
+                    events_diff.append(event.copy())
+                else:
+                    prev, nxt = 1, 1
+                    events_same.append(event.copy())
+                rebinds.append(
+                    table + [dist, record_pos[0], record_pos[1], pos[0], pos[1]])
+                event = []
         if criteria(track[f][3]):
             active = True
             record_pos = [track[f][1], track[f][2]]
-            record = track[f][3]
         elif (active):
             event.append(track[f])
         f += 1
