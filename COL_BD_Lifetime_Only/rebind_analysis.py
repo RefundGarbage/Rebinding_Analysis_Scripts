@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import time
 import os
-from natsort import natsorted
 import logging
+import csv
 import shutil
 
 
@@ -15,6 +15,8 @@ def main():
     relaxed = True
 
     output_path = csv_path + '\\_ColBD_LIFE'
+    log_file = output_path + '\\_ColBD_LIFE_LOG_rebind.txt'
+    log_result = output_path + '\\_ColBD_LIFE_RESULT_rebind.txt'
     logging_setup(output_path, 'rebind')
     if not os.path.isdir(output_path):
         raise ValueError('Directory do not exist, please run track-sorting.py first.')
@@ -24,19 +26,151 @@ def main():
 
     headers = tracks[['Video #', 'Cell', 'Track']].to_numpy()
     tracks = slice_tracks(tracks, headers)
+    headers = np.unique(headers, axis=0)
 
-    rebind = []
-    rebind_spots_same = []
-    rebind_spots_diff = []
-    rebind_unsuccessful = 0
+    rebind_relaxed = []
+    rebind_relaxed_spots_same = []
+    rebind_relaxed_spots_diff = []
+    rebind_relaxed_unsuccessful = 0
+    bound_constricted = []
+
+    rebind_strict = []
+    rebind_strict_spots_same = []
+    rebind_strict_spots_diff = []
+    rebind_strict_unsuccessful = 0
+    bound_strict = []
+
     for i in range(len(tracks)):
+        header = headers[i]
         track = list(tracks[i][['Frame', 'x', 'y', 'Bound']].to_numpy())
-        _ = rebind_record_proximity(track, rebind_distance)
-        print(i)
+
+        # Relaxed
+        rb, rb_us, rb_same, rb_diff = rebind_record_proximity(track, rebind_distance, lambda x: not x < 1)
+        bd = bound_record(track, lambda x: x == 1)
+        if(len(rb) > 0):
+            rebind_relaxed += rb
+        rebind_relaxed_unsuccessful += rb_us
+        if(len(rb_same) > 0):
+            rebind_relaxed_spots_same.append(rb_same)
+        if(len(rb_diff) > 0):
+            rebind_relaxed_spots_diff.append(rb_diff)
+        if(len(bd) > 0):
+            bound_constricted += bd
+
+        # Strict
+        rb, rb_us, rb_same, rb_diff = rebind_record_proximity(track, rebind_distance, lambda x: not x < 2)
+        bd = bound_record(track, lambda x: x == 2)
+        if(len(rb) > 0):
+            rebind_strict += rb
+        rebind_strict_unsuccessful += rb_us
+        if(len(rb_same) > 0):
+            rebind_strict_spots_same.append(rb_same)
+        if(len(rb_diff) > 0):
+            rebind_strict_spots_diff.append(rb_diff)
+        if(len(bd) > 0):
+            bound_strict += bd
+        print_log('Tabulate:', 'Video', header[0], 'Cell', header[1], 'Track', header[2])
+
+    print_log('[Analysis]')
+    print_log('__________Bound__________')
+    print_log('Constricted Diffusion Time (Frame):')
+    print_log('->', str(pd.Series(bound_constricted).describe()).replace('\n','\n-> '),'\n')
+    print_log('Strict Bound Time (Frame):')
+    print_log('->', str(pd.Series(bound_strict).describe()).replace('\n','\n-> '), '\n')
+
+    print_log('__________Rebind_________')
+    print_log('Relaxed to Relaxed Rebind Probability:')
+    print_log('-> Successful:', len(rebind_relaxed))
+    print_log('-> Unsuccessful:', rebind_relaxed_unsuccessful)
+    print_log('-> Probability', float(len(rebind_relaxed)) / float(len(rebind_relaxed) + rebind_relaxed_unsuccessful))
+
+    print_log('\n Relaxed to Relaxed Rebind Time (Frame):')
+    print_log('->', str(pd.Series([x[2] for x in rebind_relaxed]).describe()).replace('\n', '\n-> '), '\n')
+
+    print_log('Strict to Strict Rebind Probability:')
+    print_log('-> Successful:', len(rebind_strict))
+    print_log('-> Unsuccessful:', rebind_strict_unsuccessful)
+    print_log('-> Probability', float(len(rebind_strict)) / float(len(rebind_strict) + rebind_strict_unsuccessful))
+
+    print_log('\n Strict to Strict Rebind Time (Frame):')
+    print_log('->', str(pd.Series([x[2] for x in rebind_strict]).describe()).replace('\n', '\n-> '), '\n')
+
+    # output, truncate log_RESULT
+    with open(log_file) as fin, open(log_result, 'w') as fout:
+        active = False
+        for line in fin:
+            if '[Analysis]' in line:
+                active = True
+            if active:
+                fout.write(line)
+
+    # outputs
+    rebind_relaxed_spots_all = event_format_trackmate(rebind_relaxed_spots_same + rebind_relaxed_spots_diff)
+    rebind_relaxed_spots_same = event_format_trackmate(rebind_relaxed_spots_same)
+    rebind_relaxed_spots_diff = event_format_trackmate(rebind_relaxed_spots_diff)
+    rebind_strict_spots_all = event_format_trackmate(rebind_strict_spots_diff + rebind_strict_spots_same)
+    rebind_strict_spots_same = event_format_trackmate(rebind_strict_spots_same)
+    rebind_strict_spots_diff = event_format_trackmate(rebind_strict_spots_diff)
+
+    smaug_path = output_path + '\\SMAUG_REBINDING_SPOTS'
+    try:
+        shutil.rmtree(smaug_path)
+        os.mkdir(smaug_path)
+    except:
+        os.mkdir(smaug_path)
+    csv_write(smaug_path + '\\relaxed_rebinds_spotsAll.csv', rebind_relaxed_spots_all)
+    csv_write(smaug_path + '\\relaxed_rebinds_spotsSame.csv', rebind_relaxed_spots_same)
+    csv_write(smaug_path + '\\relaxed_rebinds_spotsDiff.csv', rebind_relaxed_spots_diff)
+    csv_write(smaug_path + '\\strict_rebinds_spotsAll.csv', rebind_strict_spots_all)
+    csv_write(smaug_path + '\\strict_rebinds_spotsSame.csv', rebind_strict_spots_same)
+    csv_write(smaug_path + '\\strict_rebinds_spotsDiff.csv', rebind_strict_spots_diff)
+
+    rebind_columns = ['From', 'To', 'Time', 'Speed', 'Distance', 'x1', 'y1', 'x2', 'y2']
+    rebind_relaxed = pd.DataFrame(rebind_relaxed, columns=rebind_columns).astype({'Time': 'int'})
+    rebind_strict = pd.DataFrame(rebind_strict, columns=rebind_columns).astype({'Time': 'int'})
+    rebind_relaxed.to_csv(output_path + '\\_ColBD_LIFE_rebind_relaxed.csv')
+    rebind_strict.to_csv(output_path + '\\_ColBD_LIFE_rebind_strict.csv')
     return
 
+def event_format_trackmate(events):
+    formatted = []
+    i = 1
+    for track in events:
+        for event in track:
+            for spot in event:
+                formatted.append([i, spot[0], spot[1], spot[2], 10000])
+            i += 1
+    return formatted
 
-def rebind_record_proximity(track, rebind_distance):
+def bound_record(track, criteria):
+    bound = []
+    record = track[0][3]
+    event = []
+    f = 0
+    while f < len(track):
+        if record == track[f][3]:
+            if criteria(track[f][3]):
+                event.append(track[f])
+        else:
+            if(len(event) > 0):
+                bound.append(event.copy())
+                event = []
+            if(criteria(track[f][3])):
+                event.append(track[f])
+            record = track[f][3]
+        f += 1
+    if(len(event) > 0):
+        bound.append(event.copy())
+
+    result = []
+    for event in bound:
+        if(len(event) == 1):
+            result.append(1)
+        else:
+            result.append(int(event[-1][0] - event[0][0] + 1))
+    return result
+
+def rebind_record_proximity(track, rebind_distance, criteria):
     rebinds = []
     event = []
     events_same = []
@@ -48,7 +182,7 @@ def rebind_record_proximity(track, rebind_distance):
     i = 1
 
     while (f < len(track)):
-        if (len(event) > 0 and not track[f][3] == 0):
+        if (len(event) > 0 and criteria(track[f][3])):
             pos = [track[f][1], track[f][2]]
             dist = distance(pos, record_pos)
             if (dist > rebind_distance):
@@ -58,11 +192,11 @@ def rebind_record_proximity(track, rebind_distance):
                 prev, nxt = 1, 1
                 events_same.append(event.copy())
             rebinds.append(
-                [i] + rebind_tabulate(event.copy(), prev, nxt) + [dist, record_pos[0], record_pos[1], pos[0], pos[1]])
+                rebind_tabulate(event.copy(), prev, nxt) + [dist, record_pos[0], record_pos[1], pos[0], pos[1]])
             event = []
             record = track[f][3]
             i += 1
-        if not (track[f][3] == 0):
+        if criteria(track[f][3]):
             active = True
             record_pos = [track[f][1], track[f][2]]
             record = track[f][3]
@@ -99,6 +233,13 @@ def slice_tracks(tracks, headers):
     for i in range(len(indices) - 1):
         tracks_sliced.append(tracks.iloc[indices[i] : indices[i+1], :])
     return tracks_sliced
+
+def csv_write(path, data):
+    with open(path, 'w', newline='') as file:
+        writer = csv.writer(file, delimiter=',')
+        for line in data:
+            writer.writerow(line)
+        file.close()
 
 '''
 ================================================================================================================
