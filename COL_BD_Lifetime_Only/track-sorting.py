@@ -12,6 +12,7 @@ def main():
     csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\test\\SpotsAll20'  # csv from trackmate
     mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\test\\seg'  # *.png
 
+
     # Some parameters
     allowed_gap_max = 4
     allowed_track_length_min = 5

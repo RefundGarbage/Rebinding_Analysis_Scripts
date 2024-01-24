@@ -6,7 +6,7 @@ import logging
 from tqdm import trange
 
 def determine_bound(before:list, after:list):
-    if before[0] == 1 and after[0] == 1:
+    if before[0] == 1 and after[0] ==1:
         return 1
     elif before[0] == 1 or after[0] == 1:
         return 1 if np.average(before[1:4]) > 0.5 or np.average(after[1:4]) > 0.5 else 0
@@ -20,16 +20,18 @@ def determine_bound_strict(before:list, after:list):
     return 1 if decision >= 1 else 0
 
 def main():
-    csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'  # csv from trackmate
+    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\test\\SpotsAll20' # csv from trackmate
 
     # Some parameters
-    distance_threshold = 2
-    distance_threshold_strict = 2
+    distance_threshold = 2.0
+    distance_threshold_strict = 1.6
 
     output_path = csv_path + '\\_ColBD_LIFE'
     if not os.path.isdir(output_path):
         raise ValueError('Directory do not exist, please run track-sorting.py first.')
+    logging_setup(output_path, 'bound-classification')
 
+    print_log('Reading from csv:', output_path + '\\_ColBD_LIFE_tracks.csv')
     tracks = pd.read_csv(output_path + '\\_ColBD_LIFE_tracks.csv')
     tracks = tracks.loc[:, ~tracks.columns.str.contains('^Unnamed')]
 
@@ -142,8 +144,25 @@ START
 ================================================================================================================
 '''
 
+
+# Setup Logging
+def logging_setup(path:str, script_name:str):
+    log_file = path + '\\_ColBD_LIFE_LOG_' + script_name + '.txt'
+    log_targets = [logging.FileHandler(log_file)]
+    logging.basicConfig(format='%(message)s', level=logging.INFO, handlers=log_targets)
+    logging.StreamHandler.terminator = ''
+    open(log_file, 'w').close()
+    os.system('cls')
+
+
+# Modified print
+def print_log(*args, end='\n'):
+    print(' '.join([str(a) for a in args]), end=end)
+    logging.info(' '.join([str(a) for a in args] + [end]))
+
+
 # Start Script
 if __name__ == '__main__':
     start_time = time.time()
     main()
-    print("--- %s seconds ---" % (time.time() - start_time))
+    print_log("--- %s seconds ---" % (time.time() - start_time))
