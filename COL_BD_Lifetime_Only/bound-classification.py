@@ -15,7 +15,10 @@ def determine_bound(before:list, after:list):
 def determine_bound_strict(before:list, after:list):
     decision = np.max([
         float(np.average(before[0:4])), float(np.average(after[0:4])),
-        1.0 if np.average(np.concatenate([before[0:3], after[0:3]])) > 0.8 else 0.0
+        1.0 if np.average(np.concatenate([before[0:3], after[0:3]])) > 0.8 else 0.0,
+        1.0 if np.average(np.concatenate([before[0:1], after[0:2]])) == 1.0 else 0.0,
+        1.0 if np.average(np.concatenate([before[0:2], after[0:1]])) == 1.0 else 0.0,
+        
     ])
     return 1 if decision >= 1 else 0
 
