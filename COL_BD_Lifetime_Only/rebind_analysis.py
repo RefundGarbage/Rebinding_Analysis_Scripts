@@ -76,7 +76,7 @@ def main():
             bound_strict += bd
         print_log('Tabulate:', 'Video', header[0], 'Cell', header[1], 'Track', header[2])
 
-        constrained_dest = np.add(constrained_dest, constrained_record(track))
+        constrained_dest = np.add(constrained_dest, constrained_record(track, min_time_bound_constricted, min_time_bound_strict))
 
     print_log('[Analysis]')
     print_log('__________Bound__________')
@@ -154,16 +154,29 @@ def event_format_trackmate(events):
             i += 1
     return formatted
 
-def constrained_record(track):
+def constrained_record(track, min_time_constricted, min_time_bound):
     counts = [0, 0]
     f = 0
-    record = -1
+    event = []
+    event2 = []
     while f < len(track):
-        if not record == track[f][3]:
-            if record == 1:
-                counts[0 if track[f][3] == 0 else 1] += 1
-            record = track[f][3]
+        if track[f][3] == 1:
+            event.append(track[f])
+        else:
+            if(len(event) > 0):
+                time_int = 1 if len(event) == 1 else event[-1][0] - event[0][0] + 1
+                record = track[f][3]
+                i = f
+                while i < len(track) and track[i][3] == record:
+                    event2.append(track[i])
+                    i += 1
+                time_int2 = 1 if len(event2) == 1 else event2[-1][0] - event2[0][0] + 1
+                if(time_int >= min_time_constricted and time_int2 >= min_time_bound):
+                    counts[0 if track[f][3] == 0 else 1] += 1
+                event2 = []
+                event = []
         f += 1
+
     return np.array(counts)
 
 def bound_record(track, criteria, min_time):
