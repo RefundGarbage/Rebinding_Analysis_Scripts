@@ -43,6 +43,8 @@ def main():
     rebind_strict_unsuccessful = 0
     bound_strict = []
 
+    constrained_dest = np.array([0, 0])
+
     for i in range(len(tracks)):
         header = headers[i]
         track = list(tracks[i][['Frame', 'x', 'y', 'Bound']].to_numpy())
@@ -74,6 +76,8 @@ def main():
             bound_strict += bd
         print_log('Tabulate:', 'Video', header[0], 'Cell', header[1], 'Track', header[2])
 
+        constrained_dest = np.add(constrained_dest, constrained_record(track))
+
     print_log('[Analysis]')
     print_log('__________Bound__________')
     print_log('Constricted Diffusion Time (Frame):')
@@ -97,6 +101,11 @@ def main():
 
     print_log('\n Strict to Strict Rebind Time (Frame):')
     print_log('->', str(pd.Series([x[2] for x in rebind_strict]).describe()).replace('\n', '\n-> '), '\n')
+
+    print_log('__________Constrained_____')
+    print_log('Count of Constrained to Diffusion:', constrained_dest[0])
+    print_log('Count of Constrained to Bound:', constrained_dest[1])
+    print_log('Probability of Constrained to Bound:', float(constrained_dest[1]) / float(constrained_dest[0] + constrained_dest[1]))
 
     # output, truncate log_RESULT
     with open(log_file) as fin, open(log_result, 'w') as fout:
@@ -144,6 +153,18 @@ def event_format_trackmate(events):
                 formatted.append([i, spot[0], spot[1], spot[2], 10000])
             i += 1
     return formatted
+
+def constrained_record(track):
+    counts = [0, 0]
+    f = 0
+    record = -1
+    while f < len(track):
+        if not record == track[f][3]:
+            if record == 1:
+                counts[0 if track[f][3] == 0 else 1] += 1
+            record = track[f][3]
+        f += 1
+    return np.array(counts)
 
 def bound_record(track, criteria, min_time):
     bound = []
