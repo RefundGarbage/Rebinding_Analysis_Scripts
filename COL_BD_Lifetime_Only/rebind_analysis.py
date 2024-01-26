@@ -8,14 +8,16 @@ import shutil
 
 
 def main():
-    csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'  # csv from trackmate
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5' # csv from trackmate
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\AnalysisRebindCBC_start0_Quality5'
+    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\Timelapse\\AnalysisRebindCBC_start0_Quality5'  # csv from trackmate
 
     # Some parameters
     rebind_distance = 2.0 # Determines same/diff particles
-    min_time_bound_strict = 2
-    min_time_bound_constricted = 2
-    min_time_rebinding_relaxed = 2
-    min_time_rebinding_strict = 2
+    min_time_bound_strict = 5
+    min_time_bound_constricted = 5
+    min_time_rebinding_relaxed = 5
+    min_time_rebinding_strict = 5
 
     output_path = csv_path + '\\_ColBD_LIFE'
     log_file = output_path + '\\_ColBD_LIFE_LOG_rebind.txt'

@@ -12,7 +12,7 @@ def determine_bound(before:list, after:list):
         return 1 if np.average(before[1:4]) > 0.5 or np.average(after[1:4]) > 0.5 else 0
     else: return 0
 
-def determine_bound_strict(before:list, after:list):
+def determine_bound_strict(before:list, after:list, before_1:list, after_1:list):
     decision = np.max([
         float(np.average(before[0:4])), float(np.average(after[0:4])),
         1.0 if np.average(np.concatenate([before[0:3], after[0:3]])) > 0.8 else 0.0,
@@ -23,10 +23,12 @@ def determine_bound_strict(before:list, after:list):
     return 1 if decision >= 1 else 0
 
 def main():
-    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\test\\SpotsAll20' # csv from trackmate
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'  #csv from trackmate
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\AnalysisRebindCBC_start0_Quality5'
+    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\Timelapse\\AnalysisRebindCBC_start0_Quality5'  # csv from trackmate
 
     # Some parameters
-    distance_threshold = 2.0
+    distance_threshold = 3.0
     distance_threshold_strict = 1.6
 
     output_path = csv_path + '\\_ColBD_LIFE'
@@ -63,10 +65,12 @@ def main():
         result_before, result_after = process_track(track, distance_threshold_strict)
         track_results_threshold_strict.append(result_before[result_before.columns[::-1]].join(result_after))
         decision_bound_strict = []
+        record = [np.array([], np.array([]))]
         for j in range(len(result_before.index)):
             spot_before = result_before.iloc[j].to_numpy()
             spot_after = result_after.iloc[j].to_numpy()
-            decision_bound_strict.append(determine_bound_strict(spot_before, spot_after))
+            decision_bound_strict.append(determine_bound_strict(spot_before, spot_after, record[0], record[1]))
+            record = [spot_before.copy(), spot_after.copy()]
         decisions_bound_strict.append(pd.Series(decision_bound_strict))
 
         # Constricted Diffusion
