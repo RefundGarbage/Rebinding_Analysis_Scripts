@@ -10,7 +10,7 @@ import shutil
 def main():
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5' # csv from trackmate
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\AnalysisRebindCBC_start0_Quality5'
-    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\Timelapse\\AnalysisRebindCBC_start0_Quality5'  # csv from trackmate
+    csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'  # csv from trackmate
 
     # Some parameters
     rebind_distance = 2.0 # Determines same/diff particles
@@ -55,6 +55,8 @@ def main():
         rb, rb_us, rb_same, rb_diff = rebind_record_proximity(track, rebind_distance, lambda x: not x < 1, min_time_rebinding_relaxed)
         bd = bound_record(track, lambda x: x == 1, min_time_bound_constricted)
         if(len(rb) > 0):
+            for j in range(len(rb)):
+                rb[j] = list(header) + rb[j]
             rebind_relaxed += rb
         rebind_relaxed_unsuccessful += rb_us
         if(len(rb_same) > 0):
@@ -68,6 +70,8 @@ def main():
         rb, rb_us, rb_same, rb_diff = rebind_record_proximity(track, rebind_distance, lambda x: not x < 2, min_time_rebinding_strict)
         bd = bound_record(track, lambda x: x == 2, min_time_bound_strict)
         if(len(rb) > 0):
+            for j in range(len(rb)):
+                rb[j] = list(header) + rb[j]
             rebind_strict += rb
         rebind_strict_unsuccessful += rb_us
         if(len(rb_same) > 0):
@@ -139,11 +143,11 @@ def main():
     csv_write(smaug_path + '\\strict_rebinds_spotsSame.csv', rebind_strict_spots_same)
     csv_write(smaug_path + '\\strict_rebinds_spotsDiff.csv', rebind_strict_spots_diff)
 
-    rebind_columns = ['From', 'To', 'Time', 'Speed', 'Distance', 'x1', 'y1', 'x2', 'y2']
+    rebind_columns = ['Video #', 'Cell', 'Track', 'From', 'To', 'Time', 'Speed', 'Distance', 'x1', 'y1', 'x2', 'y2']
     rebind_relaxed = pd.DataFrame(rebind_relaxed, columns=rebind_columns).astype({'Time': 'int'})
     rebind_strict = pd.DataFrame(rebind_strict, columns=rebind_columns).astype({'Time': 'int'})
-    rebind_relaxed.to_csv(output_path + '\\_ColBD_LIFE_rebind_relaxed.csv')
-    rebind_strict.to_csv(output_path + '\\_ColBD_LIFE_rebind_strict.csv')
+    rebind_relaxed.to_csv(output_path + '\\_ColBD_LIFE_rebind-relaxed.csv')
+    rebind_strict.to_csv(output_path + '\\_ColBD_LIFE_rebind-strict.csv')
     return
 
 def event_format_trackmate(events):
@@ -223,6 +227,7 @@ def rebind_record_proximity(track, rebind_distance, criteria, min_time):
     events_diff = []
     active = False
     record_pos = [track[0][1], track[0][2]]
+    record_f = 0
     f = 0
 
     while (f < len(track)):
@@ -239,19 +244,36 @@ def rebind_record_proximity(track, rebind_distance, criteria, min_time):
                 else:
                     prev, nxt = 1, 1
                     events_same.append(event.copy())
+
                 rebinds.append(
-                    table + [dist, record_pos[0], record_pos[1], pos[0], pos[1]])
+                    rebind_tabulate(event.copy(), prev, nxt) + [dist] +
+                    rebind_trace_avg(track, record_f - 1, criteria, -1) +
+                    rebind_trace_avg(track, f, criteria, 1)
+                )
                 event = []
         if criteria(track[f][3]):
             active = True
             record_pos = [track[f][1], track[f][2]]
         elif (active):
+            if len(event) == 0:
+                record_f = f
             event.append(track[f])
         f += 1
 
     # unsuccessful event
     unsuccessful = 1 if (len(event) > 0) else 0
     return rebinds, unsuccessful, events_same, events_diff
+
+
+def rebind_trace_avg(track, sframe, criteria, dir):
+    f = sframe
+    x = []
+    y = []
+    while f >= 0 and f < len(track) and criteria(track[f][3]):
+        x.append(track[f][1])
+        y.append(track[f][2])
+        f += dir
+    return [np.mean(x), np.mean(y)]
 
 
 def rebind_tabulate(segment, prev, nxt):
