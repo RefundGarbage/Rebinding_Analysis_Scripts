@@ -16,6 +16,8 @@ def main():
     csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'  # csv from trackmate
     mask_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\_seg'  # *.png
 
+    enable_fixed_particle = True
+    particle_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\particles_result'
     max_frame = 2000
 
     colors = {
@@ -26,7 +28,8 @@ def main():
         'Diffuse_Center': [250, 57, 50],
         'Diffuse_Outer': [250, 121, 116],
         'Constricted_Center': [2, 60, 161],
-        'Constricted_Outer': [76, 110, 168]
+        'Constricted_Outer': [76, 110, 168],
+        'Fixed-Particle': [133, 212, 154]
     }
 
     masks = natsorted(get_file_names_with_ext(mask_path, 'png'))
@@ -34,6 +37,9 @@ def main():
     outpath = csv_path + "\\_ColBD_LIFE"
     tracks = pd.read_csv(outpath + "\\_ColBD_LIFE_bound_decisions.csv")
     tracks = tracks.loc[:, ~tracks.columns.str.contains('^Unnamed')]
+
+    if enable_fixed_particle:
+        particles_files = natsorted(get_file_names_with_ext(particle_path, 'csv'))
 
     headers = tracks[['Video #', 'Cell', 'Track']].to_numpy()
     tracks = slice_tracks(tracks, headers)
@@ -44,11 +50,15 @@ def main():
     for i in range(len(masks)):
         print('(Video ' + str(i+1) +') -> Mask: ' + masks[i])
         mask = np.swapaxes(imgio.imread(masks[i]), 0, 1)
+        if enable_fixed_particle:
+            particles = pd.read_csv(particles_files[i]).to_numpy()
         outline = []
         with open(outlines[i], 'r') as file:
             for line in file:
                 outline.append(np.array(line.split(',')).astype(int))
-        video = inintialize_video(mask, outline, max_frame, colors['Cell_Background'], colors['Cell_Border'])
+        video = inintialize_video(mask, outline, max_frame, colors['Cell_Background'], colors['Cell_Border'], enable_fixed_particle)
+        if enable_fixed_particle:
+            video = parse_fixed_spots(video, particles, max_frame, i+1, colors['Fixed-Particle'])
         video = parse_tracks(video, tracks_by_video[i], 'Bound', colors)
 
         video = np.swapaxes(video, 1, 2).astype('uint8')
@@ -75,8 +85,18 @@ def parse_tracks(video, tracks_all, key, colors):
                     continue
     return video
 
+def parse_fixed_spots(video, particles, max_frame, vid_index, color_particle):
+    for iter in range(len(particles)):
+        particle = particles[iter]
+        nx, ny, xx, xy = particle[7:11].astype(int).tolist()
+        for i in np.arange(nx, xx + 1, 1):
+            for j in np.arange(ny, xy + 1, 1):
+                video[i][j] = color_particle.copy()
+    video = np.repeat(video[np.newaxis, :, :, :], max_frame, axis=0)
+    return video
+
 # Video is going to be a width by height by length array with rgb color
-def inintialize_video(mask, outline, max_frame, cell_color, cell_border_color):
+def inintialize_video(mask, outline, max_frame, cell_color, cell_border_color, use_fixed):
     video = np.empty(shape=(mask.shape[0], mask.shape[1], 3))
     for i in range(mask.shape[0]):
         for j in range(mask.shape[1]):
@@ -88,7 +108,7 @@ def inintialize_video(mask, outline, max_frame, cell_color, cell_border_color):
         y = outline[i][1::2]
         for k in range(len(x)):
             video[x[k]][y[k]] = cell_border_color
-    video = np.repeat(video[np.newaxis, :, :, :], max_frame, axis=0)
+    if not use_fixed: video = np.repeat(video[np.newaxis, :, :, :], max_frame, axis=0)
     return video
 
 def slice_tracks(tracks, headers):
