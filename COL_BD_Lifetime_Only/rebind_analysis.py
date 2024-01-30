@@ -38,12 +38,14 @@ def main():
     rebind_relaxed_spots_diff = []
     rebind_relaxed_unsuccessful = 0
     bound_constricted = []
+    bound_constricted_record = []
 
     rebind_strict = []
     rebind_strict_spots_same = []
     rebind_strict_spots_diff = []
     rebind_strict_unsuccessful = 0
     bound_strict = []
+    bound_strict_record = []
 
     constrained_dest = np.array([0, 0])
 
@@ -65,6 +67,10 @@ def main():
             rebind_relaxed_spots_diff.append(rb_diff)
         if(len(bd) > 0):
             bound_constricted += bd
+        j = 1
+        for bdframe in bd:
+            bound_constricted_record.append(list(header.copy()) + [j, bdframe])
+            j += 1
 
         # Strict
         rb, rb_us, rb_same, rb_diff = rebind_record_proximity(track, rebind_distance, lambda x: not x < 2, min_time_rebinding_strict)
@@ -80,6 +86,11 @@ def main():
             rebind_strict_spots_diff.append(rb_diff)
         if(len(bd) > 0):
             bound_strict += bd
+        j = 1
+        for bdframe in bd:
+            bound_strict_record.append(list(header.copy()) + [j, bdframe])
+            j += 1
+
         print_log('Tabulate:', 'Video', header[0], 'Cell', header[1], 'Track', header[2])
 
         constrained_dest = np.add(constrained_dest, constrained_record(track, min_time_bound_constricted, min_time_bound_strict))
@@ -148,6 +159,12 @@ def main():
     rebind_strict = pd.DataFrame(rebind_strict, columns=rebind_columns).astype({'Time': 'int'})
     rebind_relaxed.to_csv(output_path + '\\_ColBD_LIFE_rebind-relaxed.csv')
     rebind_strict.to_csv(output_path + '\\_ColBD_LIFE_rebind-strict.csv')
+
+    boundtime_columns = ['Video #', 'Cell', 'Track', 'Event', 'Bound Time']
+    bound_constricted_record = pd.DataFrame(bound_constricted_record, columns=boundtime_columns).astype({'Bound Time': 'int'})
+    bound_strict_record = pd.DataFrame(bound_strict_record, columns=boundtime_columns).astype({'Bound Time': 'int'})
+    bound_constricted_record.to_csv(output_path + '\\_ColBD_LIFE_bound-constricted.csv')
+    bound_strict_record.to_csv(output_path + '\\_ColBD_LIFE_bound-strict.csv')
     return
 
 def event_format_trackmate(events):
