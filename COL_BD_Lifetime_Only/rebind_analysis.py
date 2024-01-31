@@ -13,8 +13,8 @@ def main():
     csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'  # csv from trackmate
 
     # Some parameters
-    rebind_distance_same = 2.0 # Determines rebinds to same particles < parameter
-    rebind_distance_diff = 4.0 # Determines rebinds to diff particles > parameter
+    rebind_distance_same = 2.0 # Determines rebinds to same particles <= parameter
+    rebind_distance_diff = 4.0 # Determines rebinds to diff particles >= parameter
     min_time_bound_strict = 5
     min_time_bound_constricted = 5
     min_time_rebinding_relaxed = 5
