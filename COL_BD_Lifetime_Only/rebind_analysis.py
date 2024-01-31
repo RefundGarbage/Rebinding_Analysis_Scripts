@@ -13,8 +13,8 @@ def main():
     csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'  # csv from trackmate
 
     # Some parameters
-    rebind_distance_same = 2.0 # Determines rebinds to same particles < parameter
-    rebind_distance_diff = 4.0 # Determines rebinds to diff particles > parameter
+    rebind_distance_same = 2.0 # Determines rebinds to same particles <= parameter
+    rebind_distance_diff = 4.0 # Determines rebinds to diff particles >= parameter
     min_time_bound_strict = 5
     min_time_bound_constricted = 5
     min_time_rebinding_relaxed = 5
@@ -124,7 +124,7 @@ def main():
     print_log('-> Probability', float(len(rebind_relaxed)) / float(len(rebind_relaxed) + rebind_relaxed_unsuccessful))
 
     print_log('\n Relaxed to Relaxed Rebind Time (Frame):')
-    print_log('->', str(pd.Series([x[2] for x in rebind_relaxed]).describe()).replace('\n', '\n-> '), '\n')
+    print_log('->', str(pd.Series([x[5] for x in rebind_relaxed]).describe()).replace('\n', '\n-> '), '\n')
 
     print_log('Strict to Strict Rebind Probability:')
     print_log('-> Successful:', len(rebind_strict))
@@ -132,7 +132,7 @@ def main():
     print_log('-> Probability', float(len(rebind_strict)) / float(len(rebind_strict) + rebind_strict_unsuccessful))
 
     print_log('\n Strict to Strict Rebind Time (Frame):')
-    print_log('->', str(pd.Series([x[2] for x in rebind_strict]).describe()).replace('\n', '\n-> '), '\n')
+    print_log('->', str(pd.Series([x[5] for x in rebind_strict]).describe()).replace('\n', '\n-> '), '\n')
 
     print_log('__________Constrained_____')
     print_log('Count of Constrained to Diffusion:', constrained_dest[0])
