@@ -20,6 +20,7 @@ def main():
     # Some parameters
     allowed_gap_max = 20
     allowed_track_length_min = 5
+    allowed_track_length_max = 1500
     dist_range = 5
     dist_none = float('inf')
 
@@ -80,7 +81,7 @@ def main():
             _ = 0
             _1 = 0
             for track in tracks_cell:
-                track_ind, __, __1 = track_splitting_filtered(track, allowed_gap_max, allowed_track_length_min)
+                track_ind, __, __1 = track_splitting_filtered(track, allowed_gap_max, allowed_track_length_min, allowed_track_length_max)
                 tracks_ind += track_ind
                 _ += __
                 _1 += __1
@@ -122,7 +123,7 @@ def track_distance_tabulate(track, indices, dist_none):
     return track
 
 # Split tracks based on gaps and filter based on length
-def track_splitting_filtered(track, gap_max, len_min):
+def track_splitting_filtered(track, gap_max, len_min, len_max):
     res = []
     count_split = 0
     count_filter = 0
@@ -141,7 +142,7 @@ def track_splitting_filtered(track, gap_max, len_min):
     # Filter
     i = 0
     while i < len(res):
-        if(len(res[i]) < len_min):
+        if(len(res[i]) < len_min or len(res[i]) > len_max):
             del res[i]
             count_filter += 1
         else:
