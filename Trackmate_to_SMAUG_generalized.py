@@ -11,7 +11,14 @@ def main():
     # Enter all suffixes used, files will be generated for each suffix
     # Note: At least one spots file per video must exist for all suffixes, otherwise errors will occur
     #       If only a few video have spots with the suffix, create separate folders for masks and spots
-    suffixes = ['spotsAll', 'spotsTrack', 'spotsDiff', 'spotsSame']
+    suffixes = ['relaxed_rebinds_spotsAll',
+                'relaxed_rebinds_spotsTrack',
+                'relaxed_rebinds_spotsDiff',
+                'relaxed_rebinds_spotsSame',
+                'strict_rebinds_spotsAll',
+                'strict_rebinds_spotsTrack',
+                'strict_rebinds_spotsDiff',
+                'strict_rebinds_spotsSame']
     common_info = 'ColBD_LIFE'
 
     track_spots = {}
@@ -78,6 +85,9 @@ def get_file_names_with_ext(path: str, ext: str):
 
 def csv_name_sort(path: str, suffix:str):
     flist = get_file_names_with_ext(path, 'csv')
+    suffix = suffix.split('_')
+    suffix[-1] += '.csv'
+    left_index = -1 * len(suffix)
     s = []
     for file in flist:
         fname = file.split('\\')[-1].split('_')
@@ -85,7 +95,7 @@ def csv_name_sort(path: str, suffix:str):
         #    continue
         # if not fname[-3] == 'Cell':
         #    continue
-        if fname[-1] == suffix + '.csv':
+        if fname[left_index:] == suffix:
             s.append(file)
 
     return natsorted(s)
