@@ -23,9 +23,30 @@ def determine_bound_strict(before:list, after:list, before_1:list, after_1:list)
     return 1 if decision >= 1 else 0
 
 def main():
+
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\5\\timelapse'
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'  #csv from trackmate
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\AnalysisRebindCBC_start0_Quality5'
-    csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'  # csv from trackmate
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\Timelapse\\AnalysisRebindCBC_start0_Quality5'  # csv from trackmate
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\timelapse'
+    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA5\\timelapse'
+
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\set3' 
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\Timelapse\\set2'  # csv from trackmate
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\set2' 
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr208\\pr208_AnalysisRebindCBC1114_6diam_Dog'
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr208n\\AnalysisRebindCBC_11146diam_DOG'  # csv from trackmate
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr212\\AnalysisRebindCBC_11146dia_dog'
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\20230913_ypetB_haloQ\\Images\\timelapse\\101023\\AnalysisRebindCBC_1010123_start0'  # csv from trackmate
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR208' # csv from trackmate
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR212' # csv from trackmate
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\202309026_pr208DmHQctd\\Images\\AnalysisRebindCBCstart0'  # csv from trackmate
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr212\\AnalysisRebindCBC_11146dia_dog'  # csv from trackmate
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\timelapse'  # csv from trackmate
+
 
     # Some parameters
     distance_threshold = 3.0
@@ -65,7 +86,7 @@ def main():
         result_before, result_after = process_track(track, distance_threshold_strict)
         track_results_threshold_strict.append(result_before[result_before.columns[::-1]].join(result_after))
         decision_bound_strict = []
-        record = [np.array([], np.array([]))]
+        record = [np.array([]), np.array([])]
         for j in range(len(result_before.index)):
             spot_before = result_before.iloc[j].to_numpy()
             spot_after = result_after.iloc[j].to_numpy()

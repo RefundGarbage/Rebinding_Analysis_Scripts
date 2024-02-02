@@ -8,7 +8,8 @@ import logging
 import shutil
 
 def main():
-    mask_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\_seg'  # *.png
+    #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\seg\\all'  # *.png
+    mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\seg\\all'
     masks = natsorted(get_file_names_with_ext(mask_path, 'png'))
     table = []
     columns = ['Mask #', 'Mask Name', '# Cells', 'Cell', 'Area', 'Length']
