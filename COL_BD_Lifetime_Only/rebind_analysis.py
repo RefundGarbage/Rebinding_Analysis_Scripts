@@ -29,7 +29,7 @@ def main():
     #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr212\\AnalysisRebindCBC_11146dia_dog'  # csv from trackmate
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\timelapse'  # csv from trackmate
 
-    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\5\\timelapse'
+    csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'
 
     # Some parameters
     rebind_distance_same = 1.0 # Determines rebinds to same particles < parameter
@@ -38,6 +38,10 @@ def main():
     min_time_bound_constricted = 5
     min_time_rebinding_relaxed = 5
     min_time_rebinding_strict = 5
+    min_time_diffusion = 2
+    min_time_diffusion_subsequent = 2 # minimum time required for subsequent event after diffusion
+    max_time_rebinding = 200
+    max_time_constrained = 200
 
     output_path = csv_path + '\\_ColBD_LIFE'
     log_file = output_path + '\\_ColBD_LIFE_LOG_rebind.txt'
@@ -75,13 +79,21 @@ def main():
 
     constrained_dest = np.array([0, 0])
 
+    fast_diffusion_dest = np.array([0, 0])
+    fast_diffusion_dest_strict = np.array([0, 0])
+    fast_diffusion_time = []
+
+    all_diffusion_dest = np.array([0, 0])
+    all_diffusion_dest_strict = np.array([0, 0])
+    all_diffusion_time = []
+
     for i in range(len(tracks)):
         header = headers[i]
         track = list(tracks[i][['Frame', 'x', 'y', 'Bound']].to_numpy())
 
         # Relaxed
         rb, rb_us, rb_same, rb_diff, rb_all = (
-            rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, lambda x: not x < 1, min_time_rebinding_relaxed))
+            rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, lambda x: not x < 1, min_time_rebinding_relaxed, max_time_rebinding))
         bd = bound_record(track, lambda x: x == 1, min_time_bound_constricted)
         if(len(rb) > 0):
             for j in range(len(rb)):
@@ -104,7 +116,7 @@ def main():
 
         # Strict
         rb, rb_us, rb_same, rb_diff, rb_all = (
-            rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, lambda x: not x < 2, min_time_rebinding_strict))
+            rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, lambda x: not x < 2, min_time_rebinding_strict, max_time_rebinding))
         bd = bound_record(track, lambda x: x == 2, min_time_bound_strict)
         if(len(rb) > 0):
             for j in range(len(rb)):
@@ -127,7 +139,24 @@ def main():
 
         print_log('Tabulate:', 'Video', header[0], 'Cell', header[1], 'Track', header[2])
 
-        constrained_dest = np.add(constrained_dest, constrained_record(track, min_time_bound_constricted, min_time_bound_strict))
+        # constrained diffusion
+        constrained_dest = np.add(constrained_dest, constrained_record(track, min_time_bound_constricted, min_time_bound_strict, max_time_constrained))
+
+        # fast diffusion
+        df_time, df_counts = diffusion_record(track, lambda x: x > 0, min_time_diffusion, min_time_diffusion_subsequent)
+        fast_diffusion_time += df_time
+        fast_diffusion_dest = np.add(fast_diffusion_dest, df_counts)
+        if len(bd) > 0:
+            fast_diffusion_dest_strict = np.add(fast_diffusion_dest_strict, df_counts)
+
+        # all diffusion
+        df_time, df_counts = diffusion_record(track, lambda x: x > 1, min_time_diffusion,
+                                              min_time_diffusion_subsequent)
+        all_diffusion_time += df_time
+        all_diffusion_dest = np.add(all_diffusion_dest, df_counts)
+        if len(bd) > 0:
+            all_diffusion_dest_strict = np.add(all_diffusion_dest_strict, df_counts)
+
 
     print_log('[Analysis]')
     print_log('__________Bound__________')
@@ -157,6 +186,38 @@ def main():
     print_log('Count of Constrained to Diffusion:', constrained_dest[0])
     print_log('Count of Constrained to Bound:', constrained_dest[1])
     print_log('Probability of Constrained to Bound:', float(constrained_dest[1]) / float(constrained_dest[0] + constrained_dest[1]))
+    print_log('')
+
+    print_log('______Diffusion_Fast______')
+    print_log('Fast Diffusion all tracks by Frame')
+    print_log('-> Count of Fast Diffusion to Fast Diffusion:', fast_diffusion_dest[0])
+    print_log('-> Count of Fast Diffusion to Constrict/Bound:', fast_diffusion_dest[1])
+    print_log('-> Probability of Fast Diffusion to Constrict/Bound:', float(fast_diffusion_dest[1]) / float(fast_diffusion_dest[0] + fast_diffusion_dest[1]))
+
+    print_log('\nFast Diffusion tracks with strict binding by Frame')
+    print_log('-> Count of Fast Diffusion to Fast Diffusion:', fast_diffusion_dest_strict[0])
+    print_log('-> Count of Fast Diffusion to Constrict/Bound:', fast_diffusion_dest_strict[1])
+    print_log('-> Probability of Fast Diffusion to Constrict/Bound:', float(fast_diffusion_dest_strict[1]) / float(fast_diffusion_dest_strict[0] + fast_diffusion_dest_strict[1]))
+
+    print_log('\nFast Diffusion average time (Frame):')
+    print_log('->', str(pd.Series(fast_diffusion_time).describe()).replace('\n', '\n-> '), '\n')
+
+    print_log('______Diffusion_All_______')
+    print_log('All Diffusion all tracks by Frame')
+    print_log('-> Count of Diffusion to Diffusion:', all_diffusion_dest[0])
+    print_log('-> Count of Diffusion to Bound:', all_diffusion_dest[1])
+    print_log('-> Probability of Diffusion to Bound:',
+              float(all_diffusion_dest[1]) / float(all_diffusion_dest[0] + all_diffusion_dest[1]))
+
+    print_log('\nAll Diffusion tracks with strict binding by Frame')
+    print_log('-> Count of Diffusion to Diffusion:', all_diffusion_dest_strict[0])
+    print_log('-> Count of Diffusion to Bound:', all_diffusion_dest_strict[1])
+    print_log('-> Probability of Diffusion to Bound:',
+              float(all_diffusion_dest_strict[1]) / float(all_diffusion_dest_strict[0] + all_diffusion_dest_strict[1]))
+
+    print_log('\nAll Diffusion average time (Frame):')
+    print_log('->', str(pd.Series(all_diffusion_time).describe()).replace('\n', '\n-> '), '\n')
+
 
     # output, truncate log_RESULT
     with open(log_file) as fin, open(log_result, 'w') as fout:
@@ -215,7 +276,44 @@ def event_format_trackmate(events):
             i += 1
     return formatted
 
-def constrained_record(track, min_time_constricted, min_time_bound):
+def diffusion_record(track, criteria, min_time, min_time_bound):
+    counts = [0, 0]
+    event = []
+    event2 = []
+    diffusion_time = []
+    f = 0
+    while f < len(track):
+        if not criteria(track[f][3]):
+            event.append(track[f])
+        else:
+            if len(event) > 0:
+                time_int = 1 if len(event) == 1 else event[-1][0] - event[0][0] + 1
+                if time_int < min_time:
+                    event = []
+                    continue
+                diffusion_time.append(time_int)
+                counts[0] += len(event) - 1
+                record = track[f][3]
+                i = f
+                while i < len(track) and criteria(track[i][3]):
+                    event2.append(track[i])
+                    i += 1
+                time_int2 = 1 if len(event2) == 1 else event2[-1][0] - event2[0][0] + 1
+                if time_int2 < min_time_bound:
+                    counts[0] += 1
+                else:
+                    counts[1] += 1
+                event2 = []
+                event = []
+        f += 1
+    if len(event) > 0:
+        time_int = 1 if len(event) == 1 else event[-1][0] - event[0][0] + 1
+        if time_int >= min_time:
+            diffusion_time.append(time_int)
+            counts[0] += len(event) - 1
+    return diffusion_time, np.array(counts)
+
+def constrained_record(track, min_time_constricted, min_time_bound, max_time_constrained):
     counts = [0, 0]
     f = 0
     event = []
@@ -232,7 +330,8 @@ def constrained_record(track, min_time_constricted, min_time_bound):
                     event2.append(track[i])
                     i += 1
                 time_int2 = 1 if len(event2) == 1 else event2[-1][0] - event2[0][0] + 1
-                if(time_int >= min_time_constricted and time_int2 >= min_time_bound):
+                if(time_int >= min_time_constricted and time_int <= max_time_constrained and
+                        time_int2 >= min_time_bound):
                     counts[0 if track[f][3] == 0 else 1] += 1
                 event2 = []
                 event = []
@@ -275,7 +374,7 @@ def bound_record(track, criteria, min_time):
             result.append(int(event[-1][0] - event[0][0] + 1))
     return result
 
-def rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, criteria, min_time):
+def rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, criteria, min_time, max_time):
     rebinds = []
     event = []
     events_same = []
@@ -284,6 +383,7 @@ def rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, c
     active = False
     record_pos = [track[0][1], track[0][2]]
     record_f = 0
+    unsuccessful = 0
     f = 0
 
     while (f < len(track)):
@@ -293,6 +393,9 @@ def rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, c
             table = rebind_tabulate(event.copy(), 0, 0) # just to get the time
             if(table[2] < min_time): # min_time threshold
                 event = []
+            elif(table[2] > max_time):
+                event = []
+                unsuccessful += 1
             else:
                 if (dist >= rebind_distance_diff):
                     prev, nxt = 1, 2
@@ -303,11 +406,11 @@ def rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, c
                 else:
                     prev, nxt = 1, 2
                 events_all.append(event.copy())
-
+                time_int = rebind_trace_avg(track, f, criteria, 1)[0]
                 rebinds.append(
                     rebind_tabulate(event.copy(), prev, nxt) + [dist] +
-                    rebind_trace_avg(track, record_f - 1, criteria, -1) +
-                    rebind_trace_avg(track, f, criteria, 1)
+                    rebind_trace_avg(track, record_f - 1, criteria, -1)[1] +
+                    rebind_trace_avg(track, f, criteria, 1)[1]
                 )
                 event = []
         if criteria(track[f][3]):
@@ -320,7 +423,7 @@ def rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, c
         f += 1
 
     # unsuccessful event
-    unsuccessful = 1 if (len(event) > 0) else 0
+    unsuccessful += 1 if (len(event) > 0) else 0
     return rebinds, unsuccessful, events_same, events_diff, events_all
 
 
@@ -328,11 +431,14 @@ def rebind_trace_avg(track, sframe, criteria, dir):
     f = sframe
     x = []
     y = []
+    event = []
     while f >= 0 and f < len(track) and criteria(track[f][3]):
+        event.append(track[f])
         x.append(track[f][1])
         y.append(track[f][2])
         f += dir
-    return [np.mean(x), np.mean(y)]
+    time_int = 1 if len(event) == 1 else int(event[-1][0] - event[0][0] + 1)
+    return time_int, [np.mean(x), np.mean(y)]
 
 
 def rebind_tabulate(segment, prev, nxt):
