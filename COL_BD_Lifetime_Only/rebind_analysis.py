@@ -87,6 +87,8 @@ def main():
     all_diffusion_dest_strict = np.array([0, 0])
     all_diffusion_time = []
 
+    proportion_count = np.array([0, 0, 0])
+
     for i in range(len(tracks)):
         header = headers[i]
         track = list(tracks[i][['Frame', 'x', 'y', 'Bound']].to_numpy())
@@ -137,8 +139,6 @@ def main():
             bound_strict_record.append(list(header.copy()) + [j, bdframe])
             j += 1
 
-        print_log('Tabulate:', 'Video', header[0], 'Cell', header[1], 'Track', header[2])
-
         # constrained diffusion
         constrained_dest = np.add(constrained_dest, constrained_record(track, min_time_bound_constricted, min_time_bound_strict, max_time_constrained))
 
@@ -157,6 +157,11 @@ def main():
         if len(bd) > 0:
             all_diffusion_dest_strict = np.add(all_diffusion_dest_strict, df_counts)
 
+        # proportion count
+        p_counts = label_count(track)
+        proportion_count = np.add(proportion_count, p_counts)
+
+        print_log('Tabulate:', 'Video', header[0], 'Cell', header[1], 'Track', header[2])
 
     print_log('[Analysis]')
     print_log('__________Bound__________')
@@ -218,6 +223,15 @@ def main():
     print_log('\nAll Diffusion average time (Frame):')
     print_log('->', str(pd.Series(all_diffusion_time).describe()).replace('\n', '\n-> '), '\n')
 
+    print_log('____Counted_Proportions___')
+    print_log('Count of all frames:', np.sum(proportion_count))
+    print_log('Count of fast diffusion: ', proportion_count[0], '-> Proportion:',
+              float(proportion_count[0]) / np.sum(proportion_count))
+    print_log('Count of constrained diffusion: ', proportion_count[1], '-> Proportion:',
+              float(proportion_count[1]) / np.sum(proportion_count))
+    print_log('Count of strict binding: ', proportion_count[2], '-> Proportion:',
+              float(proportion_count[2]) / np.sum(proportion_count))
+
 
     # output, truncate log_RESULT
     with open(log_file) as fin, open(log_result, 'w') as fout:
@@ -265,6 +279,15 @@ def main():
     bound_constricted_record.to_csv(output_path + '\\_ColBD_LIFE_bound-constricted.csv')
     bound_strict_record.to_csv(output_path + '\\_ColBD_LIFE_bound-strict.csv')
     return
+
+def label_count(track):
+    result = np.array([0, 0, 0])
+    labels = np.array(track)[:, 3]
+    unique, counts = np.unique(labels, return_counts=True)
+    unique = unique.astype('int')
+    for i in range(unique.shape[0]):
+        result[unique[i]] = counts[i]
+    return result
 
 def event_format_trackmate(events):
     formatted = []
