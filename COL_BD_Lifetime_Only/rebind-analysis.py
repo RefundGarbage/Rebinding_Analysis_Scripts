@@ -21,7 +21,7 @@ def main():
     rebind_distance_same = configs['rebind-analysis']['rebind_distance_same']
     rebind_distance_diff = configs['rebind-analysis']['rebind_distance_diff']
     min_time_bound_strict = configs['rebind-analysis']['min_time_bound_strict']
-    min_time_bound_constricted = configs['rebind-analysis']['min_time_bound_constricted']
+    min_time_bound_constricted = configs['rebind-analysis']['min_time_bound_constrained']
     min_time_rebinding_relaxed = configs['rebind-analysis']['min_time_rebinding_relaxed']
     min_time_rebinding_strict = configs['rebind-analysis']['min_time_rebinding_strict']
     min_time_diffusion = configs['rebind-analysis']['min_time_diffusion']
@@ -29,14 +29,16 @@ def main():
     max_time_rebinding = configs['rebind-analysis']['max_time_rebinding']
     max_time_constrained = configs['rebind-analysis']['max_time_constrained']
 
-    output_path = csv_path + '\\_ColBD_LIFE'
+    use_gap_fixed = configs['toggle']['use_gap_fixed']
+
+    output_path = csv_path + '\\' + configs['path']['output_folder_name']
     log_file = output_path + '\\_ColBD_LIFE_LOG_rebind.txt'
     log_result = output_path + '\\_ColBD_LIFE_RESULT_rebind.txt'
     logging_setup(output_path, 'rebind')
     if not os.path.isdir(output_path):
         raise ValueError('Directory do not exist, please run track-sorting.py first.')
 
-    tracks = pd.read_csv(output_path + '\\_ColBD_LIFE_bound_decisions.csv')
+    tracks = pd.read_csv(output_path + ('\\_ColBD_LIFE_gaps-and-fixes_decisions.csv' if use_gap_fixed else '\\_ColBD_LIFE_bound_decisions.csv'))
     tracks = tracks.loc[:, ~tracks.columns.str.contains('^Unnamed')]
 
     headers = tracks[['Video #', 'Cell', 'Track']].to_numpy()
@@ -72,6 +74,7 @@ def main():
     all_diffusion_dest = np.array([0, 0])
     all_diffusion_dest_strict = np.array([0, 0])
     all_diffusion_time = []
+    diftime_record = []
 
     proportion_count = np.array([0, 0, 0])
 
@@ -142,6 +145,10 @@ def main():
         all_diffusion_dest = np.add(all_diffusion_dest, df_counts)
         if len(bd) > 0:
             all_diffusion_dest_strict = np.add(all_diffusion_dest_strict, df_counts)
+        j = 1
+        for dfframe in df_time:
+            diftime_record.append(list(header.copy()) + [j, dfframe])
+            j += 1
 
         # proportion count
         p_counts = label_count(track)
@@ -256,14 +263,19 @@ def main():
     rebind_columns = ['Video #', 'Cell', 'Track', 'From', 'To', 'Time', 'Speed', 'Distance', 'x1', 'y1', 'x2', 'y2']
     rebind_relaxed = pd.DataFrame(rebind_relaxed, columns=rebind_columns).astype({'Time': 'int'})
     rebind_strict = pd.DataFrame(rebind_strict, columns=rebind_columns).astype({'Time': 'int'})
-    rebind_relaxed.to_csv(output_path + '\\_ColBD_LIFE_rebind-relaxed.csv')
-    rebind_strict.to_csv(output_path + '\\_ColBD_LIFE_rebind-strict.csv')
+    rebind_relaxed.to_csv(output_path + '\\_ColBD_LIFE_rebind-relaxed-event.csv')
+    rebind_strict.to_csv(output_path + '\\_ColBD_LIFE_rebind-strict-event.csv')
 
     boundtime_columns = ['Video #', 'Cell', 'Track', 'Event', 'Bound Time']
     bound_constricted_record = pd.DataFrame(bound_constricted_record, columns=boundtime_columns).astype({'Bound Time': 'int'})
     bound_strict_record = pd.DataFrame(bound_strict_record, columns=boundtime_columns).astype({'Bound Time': 'int'})
-    bound_constricted_record.to_csv(output_path + '\\_ColBD_LIFE_bound-constricted.csv')
-    bound_strict_record.to_csv(output_path + '\\_ColBD_LIFE_bound-strict.csv')
+    bound_constricted_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-constricted-time.csv')
+    bound_strict_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-strict-time.csv')
+
+    diftime_columns = ['Video #', 'Cell', 'Track', 'Event', 'Diffusion Time']
+    diftime_record = pd.DataFrame(diftime_record, columns=diftime_columns).astype(
+        {'Diffusion Time': 'int'})
+    diftime_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-diffusion-time')
     return
 
 def label_count(track):

@@ -36,7 +36,7 @@ def main():
     distance_threshold = configs['bound-classification']['distance_threshold']
     distance_threshold_strict = configs['bound-classification']['distance_threshold_strict']
 
-    output_path = csv_path + '\\_ColBD_LIFE'
+    output_path = csv_path + '\\' + configs['path']['output_folder_name']
     if not os.path.isdir(output_path):
         raise ValueError('Directory do not exist, please run track-sorting.py first.')
     logging_setup(output_path, 'bound-classification')
@@ -149,6 +149,7 @@ def slice_tracks(tracks, headers):
     for i in range(len(indices) - 1):
         tracks_sliced.append(tracks.iloc[indices[i] : indices[i+1], :])
     return tracks_sliced
+
 
 '''
 ================================================================================================================

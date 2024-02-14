@@ -40,13 +40,16 @@ def main():
     dist_columns = list(dist_columns)
     final_list_track_spots_columns += dist_columns
 
-    output_path = csv_path + '\\_ColBD_LIFE'
+    output_path = csv_path + '\\' + configs['path']['output_folder_name']
     try:
         shutil.rmtree(output_path)
         os.mkdir(output_path)
     except:
         os.mkdir(output_path)
     logging_setup(output_path, 'track-sorting')
+
+    # config file save
+    shutil.copy(config_path, output_path + '\\script-config.toml')
 
     masks = natsorted(get_file_names_with_ext(mask_path, 'png'))
     csv_sorted = csv_name_sort_suffix(csv_path, 'spotsAll')
