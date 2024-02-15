@@ -13,6 +13,10 @@ import shutil
 import sys
 
 def main():
+
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\1201_12D\\1201ars_spotstracks\\AnalysisRebindCBC_start0_Quality2p5'
+    #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\1201_12D\\1201ars_segmen'  # *.png
+
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'
     #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\seg\\all'  # *.png
 
@@ -28,11 +32,11 @@ def main():
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA5\\timelapse'  # csv from trackmate
     #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA5\\seg'  # *.png
 
-    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\timelapse'  # csv from trackmate
-    mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\seg'  # *.png
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\timelapse'  # csv from trackmate
+    #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\seg'  # *.png
 
-    #csv_path = 'F:\\_Microscopy\\Rawdates\\20230913_ypetB_haloQ\\Images\\timelapse\\101023\\AnalysisRebindCBC_1010123_start0'  # csv from trackmate
-    #mask_path = 'F:\\_Microscopy\\Rawdates\\20230913_ypetB_haloQ\\Images\\seg\\seg101023'  # *.png
+    csv_path = 'F:\\_Microscopy\\Rawdates\\20230913_ypetB_haloQ\\Images\\timelapse\\101023\\AnalysisRebindCBC_1010123_start0'  # csv from trackmate
+    mask_path = 'F:\\_Microscopy\\Rawdates\\20230913_ypetB_haloQ\\Images\\seg\\seg101023'  # *.png
 
     #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr212\\AnalysisRebindCBC_11146dia_dog'  # csv from trackmate
     #mask_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr212'  # *.png
@@ -52,8 +56,14 @@ def main():
     #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr212\\AnalysisRebindCBC_11146dia_dog'  # csv from trackmate
     #mask_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr212'  # *.png
 
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\untitled_folder\\timelapse\\Images\\Images\\AnalysisRebindCBC_start0_Quality2p5'  # csv from trackmate
+    #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\untitled_folder\\seg'  # *.png
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR208n\\timelapse'  # csv from trackmate
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR208n\\seg'  # *.png
+
     enable_fixed_particle = False
-    particle_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\particles_result'
+    particle_path = 'F:\\_Microscopy\\Rawdates\\20230913_ypetB_haloQ\\Images\\particles_result\\pt101023'
     max_frame = 2000
 
     colors = {
@@ -65,7 +75,7 @@ def main():
         'Diffuse_Outer': [250, 121, 116],
         'Constricted_Center': [76, 110, 168],
         'Constricted_Outer': [76, 110, 168],
-        'Fixed-Particle': [133, 212, 154]
+        'Fixed-Particle': [255,255,0]
     }
 
     masks = natsorted(get_file_names_with_ext(mask_path, 'png'))

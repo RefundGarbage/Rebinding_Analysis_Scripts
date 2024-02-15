@@ -10,13 +10,17 @@ import shutil
 
 def main():
 
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\1201_12D\\1201ars_spotstracks\\AnalysisRebindCBC_start0_Quality2p5'
+    #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\1201_12D\\1201ars_segmen'  # *.png
+
+
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\5\\timelapse'
     #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\5\\seg'  # *.png
 
 
 
-    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'
-    #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\seg\\all'  # *.png
+    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'
+    mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\seg\\all'  # *.png
 
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\timelapse\\AnalysisRebindCBC_start0_Quality5'  # csv from trackmate
     #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\seg\\all'  # *.png
@@ -24,11 +28,11 @@ def main():
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\AnalysisRebindCBC_start0_Quality5'  # csv from trackmate
     #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\seg\\all'  # *.png
 
-    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'
-    #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\seg\\all'  # *.png
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\timelapse\\set2'
+    #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\seg\\seg2'  # *.png
 
-    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA5\\timelapse'  # csv from trackmate
-    mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA5\\seg'  # *.png
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA5\\timelapse'  # csv from trackmate
+    #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA5\\seg'  # *.png
 
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\timelapse'  # csv from trackmate
     #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\seg'  # *.png
@@ -45,8 +49,8 @@ def main():
     #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr208n\\AnalysisRebindCBC_11146diam_DOG'  # csv from trackmate
     #mask_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr208n'  # *.png
 
-    #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR212' # csv from trackmate
-    #mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr212\\100ms\\set1' # *.png
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR208' # csv from trackmate
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr208\\100ms' # *.png
 
     #csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR212' # csv from trackmate
     #mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr212\\100ms\\set1' # *.png
@@ -54,13 +58,48 @@ def main():
     #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr212\\AnalysisRebindCBC_11146dia_dog'  # csv from trackmate
     #mask_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr212'  # *.png
 
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\20230921_pr212\\Images\\timelapse\\AnalysisRebindCBC30octstrict'  # csv from trackmate
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\20230921_pr212\\Images\\original\\AnalysisRebindCBCstart0'  # csv from trackmate
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\20230921_pr212\\Images\\seg'  # *.png
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\20230928_pr208hqA7\\Images\\originalResults\\AnalysisRebindCBCstart0'  # csv from trackmate
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\202309026_pr208DmHQctd\\Images\\AnalysisRebindCBCstart0noSlow'  # csv from trackmate
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\202309026_pr208DmHQctd\\Images\\seg'  # *.png
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\20230928_pr208hqA7\\Images\\originalResults\\AnalysisRebindCBCstart0'  # csv from trackmate
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\20230928_pr208hqA7\\Images\\seg'  # *.png
+
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\untitled_folder\\timelapse\\Images\\Images\\AnalysisRebindCBC_start0_Quality2p5'  # csv from trackmate
+    #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\untitled_folder\\seg'  # *.png
+
+    #TetR_Reanalysis
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR212\\timelapse'  # csv from trackmate
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR212\\seg'  # *.png
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR212tet\\timelapse'  # csv from trackmate
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR212tet\\seg'  # *.png
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR208\\timelapse'  # csv from trackmate
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR208\\seg'  # *.png
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR208n\\timelapse'  # csv from trackmate
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR208n\\seg'  # *.png
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR208tet\\timelapse'  # csv from trackmate
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR208tet\\seg'  # *.png
 
     # Some parameters
     allowed_gap_max = 20
     allowed_track_length_min = 50
-    allowed_track_length_max = 1500
+    allowed_track_length_max = 1800
     dist_range = 5
-    allowed_overlap = 30
+
+
+    suffix = 'spotsAll'
+    bacteria = True
+    allowed_overlap = 30 #30 20i100ms 60 100ms
+
 
     dist_none = float('inf')
 
@@ -86,7 +125,7 @@ def main():
     logging_setup(output_path, 'track-sorting')
 
     masks = natsorted(get_file_names_with_ext(mask_path, 'png'))
-    csv_sorted = csv_name_sort_suffix(csv_path, 'spotsAll')
+    csv_sorted = csv_name_sort_suffix(csv_path, suffix)
     csv_keys = natsorted(list(csv_sorted.keys()))
 
     if not len(csv_sorted.keys()) == len(masks):
@@ -112,12 +151,13 @@ def main():
             print_log('\t\t: # Tracks in Cell:', len(tracks_cell))
 
             _ = 0
-            for k in range(len(tracks_cell)):
-                tracks_cell[k], __ = eliminate_repeated_frames(tracks_cell[k])
-                _ += __
-            print_log('\t\t: # Repeated Spots eliminated:', _)
-            if _ > allowed_overlap:
-                continue
+            if bacteria:
+                for k in range(len(tracks_cell)):
+                    tracks_cell[k], __ = eliminate_repeated_frames(tracks_cell[k])
+                    _ += __
+                print_log('\t\t: # Repeated Spots eliminated:', _)
+                if _ > allowed_overlap:
+                    continue
             tracks_ind = []
             _ = 0
             _1 = 0

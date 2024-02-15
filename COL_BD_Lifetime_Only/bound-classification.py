@@ -18,22 +18,24 @@ def determine_bound_strict(before:list, after:list, before_1:list, after_1:list)
         1.0 if np.average(np.concatenate([before[0:3], after[0:3]])) > 0.8 else 0.0,
         1.0 if np.average(np.concatenate([before[0:1], after[0:2]])) == 1.0 else 0.0,
         1.0 if np.average(np.concatenate([before[0:2], after[0:1]])) == 1.0 else 0.0,
-        
+
     ])
     return 1 if decision >= 1 else 0
 
 def main():
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\1201_12D\\1201ars_spotstracks\\AnalysisRebindCBC_start0_Quality2p5'
 
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\5\\timelapse'
-    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'  #csv from trackmate
+    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'  #csv from trackmate
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\AnalysisRebindCBC_start0_Quality5'
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\Timelapse\\AnalysisRebindCBC_start0_Quality5'  # csv from trackmate
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\timelapse'
-    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA5\\timelapse'
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA5\\timelapse'
 
-    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\set3' 
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\timelapse\\set2'
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\set3'
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\Timelapse\\set2'  # csv from trackmate
-    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\set2' 
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\set2'
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'
 
     #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr208\\pr208_AnalysisRebindCBC1114_6diam_Dog'
@@ -47,10 +49,30 @@ def main():
     #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr212\\AnalysisRebindCBC_11146dia_dog'  # csv from trackmate
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\timelapse'  # csv from trackmate
 
+   #csv_path = 'F:\\_Microscopy\\Rawdates\\20230921_pr212\\Images\\original\\AnalysisRebindCBCstart0'  # csv from trackmate
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\20230921_pr212\\Images\\timelapse\\AnalysisRebindCBC30octstrict'  # csv from trackmate
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\20230928_pr208hqA7\\Images\\originalResults\\AnalysisRebindCBCstart0'
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\20230928_pr208hqA7\\Images\\AnalysisRebindCBCnewstrictboundoct30'  # csv from trackmate
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\202309026_pr208DmHQctd\\Images\\AnalysisRebindCBCstart0noSlow'  # csv from trackmate
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\20230928_pr208hqA7\\Images\\originalResults\\AnalysisRebindCBCstart0'  # csv from trackmate
+    #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\untitled_folder\\timelapse\\Images\\Images\\AnalysisRebindCBC_start0_Quality2p5'  # csv from trackmate
+
+    #TetR_Reanalysis
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR212\\timelapse'  # csv from trackmate
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR212tet\\timelapse'  # csv from trackmate
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR208\\timelapse'  # csv from trackmate
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR208n\\timelapse'  # csv from trackmate
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\TETR_Reanalysis\\PR208tet\\timelapse'  # csv from trackmate
+
 
     # Some parameters
-    distance_threshold = 3.0
-    distance_threshold_strict = 1.6
+    distance_threshold = 2.5
+    distance_threshold_strict = 1.3
 
     output_path = csv_path + '\\_ColBD_LIFE'
     if not os.path.isdir(output_path):

@@ -10,16 +10,19 @@ from skimage import io as imgio
 
 
 def main():
-    #csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'  # csv from trackmate
-    #particle_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\particles_result'
-    #mask_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\_seg'
 
-    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5' 
-    mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\seg\\all'  # *.png
+
+    #csv_path = 'F:\\_Microscopy\\Rawdates\\202309026_pr208DmHQctd\\Images\\AnalysisRebindCBCstart0noSlow'  # csv from trackmate
+    #mask_path = 'F:\\_Microscopy\\Rawdates\\202309026_pr208DmHQctd\\Images\\seg'  # *.png
+    #particle_path = 'F:\\_Microscopy\\Rawdates\\202309026_pr208DmHQctd\\Images\\pt\\pr208_particles_result_1diam'
+
+    csv_path = 'F:\\_Microscopy\\Rawdates\\20230928_pr208hqA7\\Images\\originalResults\\AnalysisRebindCBCstart0'  # csv from trackmate
+    mask_path = 'F:\\_Microscopy\\Rawdates\\20230928_pr208hqA7\\Images\\seg'  # *.png
+    particle_path = 'F:\\_Microscopy\\Rawdates\\20230928_pr208hqA7\\Images\\pt\\pr208_particles_result_1diam'
 
 
     # Some parameters
-    dist_bound_particle = 2.0
+    dist_bound_particle = 1.0
 
     output_path = csv_path + '\\_ColBD_LIFE'
     logging_setup(output_path, 'fixed-particle_analysis')
@@ -51,6 +54,12 @@ def main():
         print_log('Processing:', mask_files[i])
         n_cell = np.max(mask_videos[i])
         print_log('\t# Cells in Video:', n_cell)
+        if type(particle_videos[i]) == list:
+            print_log('\t [ No particles ]')
+            continue
+        if type(rebinds_videos[i]) == list:
+            print_log('\t [ No rebinding ]')
+            continue
         particle_cells = split_particles_by_cell(particle_videos[i], mask_videos[i], n_cell)
         rebinds_cells = split_rebinds_by_cell(rebinds_videos[i], n_cell)
 
