@@ -49,6 +49,7 @@ def main():
     rebind_relaxed_spots_same = []
     rebind_relaxed_spots_diff = []
     rebind_relaxed_spots_all = []
+    rebind_relaxed_time_all = []
     rebind_relaxed_unsuccessful = 0
     bound_constricted = []
     bound_constricted_record = []
@@ -59,6 +60,7 @@ def main():
     rebind_strict_spots_same = []
     rebind_strict_spots_diff = []
     rebind_strict_spots_all = []
+    rebind_strict_time_all = []
     rebind_strict_unsuccessful = 0
     bound_strict = []
     bound_strict_record = []
@@ -83,7 +85,7 @@ def main():
         track = list(tracks[i][['Frame', 'x', 'y', 'Bound']].to_numpy())
 
         # Relaxed
-        rb, rb_us, rb_same, rb_diff, rb_all = (
+        rb, rb_us, rb_same, rb_diff, rb_all, time_all = (
             rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, lambda x: not x < 1, min_time_rebinding_relaxed, max_time_rebinding))
         bd = bound_record(track, lambda x: x == 1, min_time_bound_constricted)
         if(len(rb) > 0):
@@ -104,9 +106,13 @@ def main():
         for bdframe in bd:
             bound_constricted_record.append(list(header.copy()) + [j, bdframe])
             j += 1
+        j = 1
+        for rbtime in time_all:
+            rebind_relaxed_time_all.append(list(header.copy()) + [j, rbtime])
+            j += 1
 
         # Strict
-        rb, rb_us, rb_same, rb_diff, rb_all = (
+        rb, rb_us, rb_same, rb_diff, rb_all, time_all = (
             rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, lambda x: not x < 2, min_time_rebinding_strict, max_time_rebinding))
         bd = bound_record(track, lambda x: x == 2, min_time_bound_strict)
         if(len(rb) > 0):
@@ -126,6 +132,10 @@ def main():
         j = 1
         for bdframe in bd:
             bound_strict_record.append(list(header.copy()) + [j, bdframe])
+            j += 1
+        j = 1
+        for rbtime in time_all:
+            rebind_strict_time_all.append(list(header.copy()) + [j, rbtime])
             j += 1
 
         # constrained diffusion
@@ -170,7 +180,7 @@ def main():
     print_log('-> Probability', float(len(rebind_relaxed)) / float(len(rebind_relaxed) + rebind_relaxed_unsuccessful))
 
     print_log('\n Relaxed to Relaxed Rebind Time (Frame):')
-    print_log('->', str(pd.Series([x[5] for x in rebind_relaxed]).describe()).replace('\n', '\n-> '), '\n')
+    print_log('->', str(pd.Series([x[4] for x in rebind_relaxed_time_all]).describe()).replace('\n', '\n-> '), '\n')
 
     print_log('Strict to Strict Rebind Probability:')
     print_log('-> Successful:', len(rebind_strict))
@@ -178,7 +188,7 @@ def main():
     print_log('-> Probability', float(len(rebind_strict)) / float(len(rebind_strict) + rebind_strict_unsuccessful))
 
     print_log('\n Strict to Strict Rebind Time (Frame):')
-    print_log('->', str(pd.Series([x[5] for x in rebind_strict]).describe()).replace('\n', '\n-> '), '\n')
+    print_log('->', str(pd.Series([x[4] for x in rebind_strict_time_all]).describe()).replace('\n', '\n-> '), '\n')
 
     print_log('__________Constrained_____')
     print_log('Count of Constrained to Diffusion:', constrained_dest[0])
@@ -269,13 +279,21 @@ def main():
     boundtime_columns = ['Video #', 'Cell', 'Track', 'Event', 'Bound Time']
     bound_constricted_record = pd.DataFrame(bound_constricted_record, columns=boundtime_columns).astype({'Bound Time': 'int'})
     bound_strict_record = pd.DataFrame(bound_strict_record, columns=boundtime_columns).astype({'Bound Time': 'int'})
-    bound_constricted_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-constricted-time.csv')
-    bound_strict_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-strict-time.csv')
+    bound_constricted_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-constricted-boundtime.csv')
+    bound_strict_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-strict-boundtime.csv')
 
     diftime_columns = ['Video #', 'Cell', 'Track', 'Event', 'Diffusion Time']
     diftime_record = pd.DataFrame(diftime_record, columns=diftime_columns).astype(
         {'Diffusion Time': 'int'})
-    diftime_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-diffusion-time')
+    diftime_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-diffusion-time.csv')
+
+    rbtime_columns = ['Vdieo #', 'Cell', 'Track', 'Event', 'Rebinding Time']
+    rbtime_relaxed_record = pd.DataFrame(rebind_relaxed_time_all, columns=rbtime_columns).astype(
+        {'Rebinding Time': 'int'})
+    rbtime_strict_record = pd.DataFrame(rebind_strict_time_all, columns=rbtime_columns).astype(
+        {'Rebinding Time': 'int'})
+    rbtime_relaxed_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-relaxed-rebindingtime.csv')
+    rbtime_strict_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-strict-rebindingtime.csv')
     return
 
 def label_count(track):
@@ -401,6 +419,7 @@ def rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, c
     events_same = []
     events_diff = []
     events_all = []
+    time_all = []
     active = False
     record_pos = [track[0][1], track[0][2]]
     record_f = 0
@@ -416,8 +435,10 @@ def rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, c
                 event = []
             elif(table[2] > max_time):
                 event = []
+                time_all.append(table[2])
                 unsuccessful += 1
             else:
+                time_all.append(table[2])
                 if (dist >= rebind_distance_diff):
                     prev, nxt = 1, 2
                     events_diff.append(event.copy())
@@ -445,7 +466,7 @@ def rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, c
 
     # unsuccessful event
     unsuccessful += 1 if (len(event) > 0) else 0
-    return rebinds, unsuccessful, events_same, events_diff, events_all
+    return rebinds, unsuccessful, events_same, events_diff, events_all, time_all
 
 
 def rebind_trace_avg(track, sframe, criteria, dir):
