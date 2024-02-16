@@ -1,22 +1,17 @@
 import numpy as np
 import pandas as pd
-from scipy import io as scio
 from skimage import io as imgio
-import skimage
 import os
 from natsort import natsorted
 import time
 import tifffile
-import csv
-import logging
-import shutil
-import sys
 
 def main():
-    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\timelapse'  # csv from trackmate
-    mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\seg'  # *.png
+    csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'
+    mask_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\_seg'
 
     enable_fixed_particle = False
+    use_gap_fixes = True
     particle_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\particles_result'
     max_frame = 2000
 
@@ -29,13 +24,15 @@ def main():
         'Diffuse_Outer': [250, 121, 116],
         'Constricted_Center': [76, 110, 168],
         'Constricted_Outer': [76, 110, 168],
-        'Fixed-Particle': [133, 212, 154]
+        'Fixed-Particle': [133, 212, 154],
+        'Gap': [102, 255, 102]
     }
 
     masks = natsorted(get_file_names_with_ext(mask_path, 'png'))
     outlines = natsorted(get_file_names_with_ext(mask_path, 'txt'))
     outpath = csv_path + "\\_ColBD_LIFE"
-    tracks = pd.read_csv(outpath + "\\_ColBD_LIFE_bound_decisions.csv")
+    tracks = pd.read_csv((outpath + "\\_ColBD_LIFE_bound_decisions.csv") if not use_gap_fixes else
+                         (outpath + "\\_ColBD_LIFE_gaps-and-fixes_decisions.csv"))
     tracks = tracks.loc[:, ~tracks.columns.str.contains('^Unnamed')]
 
     if enable_fixed_particle:
@@ -70,17 +67,30 @@ def main():
 
 def parse_tracks(video, tracks_all, key, colors):
     for tracks in tracks_all:
+        record = (int(tracks.iloc[0]['x']), int(tracks.iloc[0]['y']))
         for iter in range(len(tracks.index)):
             spot = tracks.iloc[iter]
             mark = spot[key]
             frame, x, y = int(spot['Frame']), int(np.round(spot['x'])), int(np.round(spot['y']))
+            gap = x == -1 or y == -1
+            if(gap):
+                x, y = record
+            else:
+                record = (int(np.round(spot['x'])), int(np.round(spot['y'])))
             if(frame >= video.shape[0]): continue # not really necessary
             outer = spot_index(x, y)
-            video[frame][x][y] = colors['Diffuse_Center'].copy() if mark == 0 else colors['Constricted_Center'].copy() if mark == 1 else colors['Bound_Center'].copy()
+            video[frame][x][y] = (
+                colors['Gap'].copy()) if gap else (
+                colors['Diffuse_Center'].copy()) if mark == 0 else (
+                colors['Constricted_Center'].copy()) if mark == 1 else (
+                colors['Bound_Center'].copy())
             for x1, y1 in outer:
                 try:
-                    video[frame][x1][y1] = colors['Diffuse_Outer'].copy() if mark == 0 else colors['Constricted_Outer'].copy() if mark == 1 else colors['Bound_Outer'].copy()
-
+                    video[frame][x1][y1] = (
+                        colors['Gap'].copy()) if gap else (
+                        colors['Diffuse_Outer'].copy()) if mark == 0 else (
+                        colors['Constricted_Outer'].copy()) if mark == 1 else (
+                        colors['Bound_Outer'].copy())
                 except IndexError:
                     continue
     return video
