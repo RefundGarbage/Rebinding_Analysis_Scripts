@@ -54,6 +54,8 @@ def main():
     bound_constricted = []
     bound_constricted_record = []
 
+    bound_flanked_relaxed_record = []
+
     rebind_relaxed_spots_entiretrack = []
 
     rebind_strict = []
@@ -64,6 +66,8 @@ def main():
     rebind_strict_unsuccessful = 0
     bound_strict = []
     bound_strict_record = []
+
+    bound_flanked_strict_record = []
 
     rebind_strict_spots_entiretrack = []
 
@@ -111,6 +115,15 @@ def main():
             rebind_relaxed_time_all.append(list(header.copy()) + [j, rbtime])
             j += 1
 
+        # Bound time calculations, now must be flanked by diffusions
+        _, __, ___, ____, _____, bd1 = (
+            rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, lambda x: not x > 0,
+                                    min_time_bound_constricted, max_time_rebinding))
+        j = 1
+        for bdtime in bd1:
+            bound_flanked_relaxed_record.append(list(header.copy()) + [j, bdtime])
+            j += 1
+
         # Strict
         rb, rb_us, rb_same, rb_diff, rb_all, time_all = (
             rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, lambda x: not x < 2, min_time_rebinding_strict, max_time_rebinding))
@@ -136,6 +149,15 @@ def main():
         j = 1
         for rbtime in time_all:
             rebind_strict_time_all.append(list(header.copy()) + [j, rbtime])
+            j += 1
+
+        # Bound time calculations, now must be flanked by diffusions
+        _, __, ___, ____, _____, bd1 = (
+            rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, lambda x: not x > 1,
+                                    min_time_bound_strict, max_time_rebinding))
+        j = 1
+        for bdtime in bd1:
+            bound_flanked_strict_record.append(list(header.copy()) + [j, bdtime])
             j += 1
 
         # constrained diffusion
@@ -235,6 +257,15 @@ def main():
     print_log('Count of strict binding: ', proportion_count[2], '-> Proportion:',
               float(proportion_count[2]) / np.sum(proportion_count))
 
+    print_log('\n______Bound_Flanked_______')
+    print_log('# Note: This is bound time flanked by diffusion.',
+              '\n-> Relaxed: Constrained = Bound',
+              '\n-> Strict: Constrained = Diffusion')
+    print_log('\nRelaxed Bound time:')
+    print_log('->', str(pd.Series([x[4] for x in bound_flanked_relaxed_record]).describe()).replace('\n', '\n-> '), '\n')
+    print_log('\nStrict Bound time:')
+    print_log('->', str(pd.Series([x[4] for x in bound_flanked_strict_record]).describe()).replace('\n', '\n-> '), '\n')
+
 
     # output, truncate log_RESULT
     with open(log_file) as fin, open(log_result, 'w') as fout:
@@ -282,12 +313,17 @@ def main():
     bound_constricted_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-constricted-boundtime.csv')
     bound_strict_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-strict-boundtime.csv')
 
+    bound_flanked_relaxed_record = pd.DataFrame(bound_flanked_relaxed_record, columns=boundtime_columns).astype({'Bound Time': 'int'})
+    bound_flanked_strict_record = pd.DataFrame(bound_flanked_strict_record, columns=boundtime_columns).astype({'Bound Time': 'int'})
+    bound_flanked_relaxed_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-flanked-relaxed-boundtime.csv')
+    bound_flanked_strict_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-flanked_strict-boundtime.csv')
+
     diftime_columns = ['Video #', 'Cell', 'Track', 'Event', 'Diffusion Time']
     diftime_record = pd.DataFrame(diftime_record, columns=diftime_columns).astype(
         {'Diffusion Time': 'int'})
     diftime_record.to_csv(output_path + '\\_ColBD_LIFE_rebind-diffusion-time.csv')
 
-    rbtime_columns = ['Vdieo #', 'Cell', 'Track', 'Event', 'Rebinding Time']
+    rbtime_columns = ['Video #', 'Cell', 'Track', 'Event', 'Rebinding Time']
     rbtime_relaxed_record = pd.DataFrame(rebind_relaxed_time_all, columns=rbtime_columns).astype(
         {'Rebinding Time': 'int'})
     rbtime_strict_record = pd.DataFrame(rebind_strict_time_all, columns=rbtime_columns).astype(
