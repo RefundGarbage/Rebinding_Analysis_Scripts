@@ -20,6 +20,7 @@ def main():
     min_time_strict = configs['gaps-and-fixes']['min_time_strict']
     min_time_constrained = configs['gaps-and-fixes']['min_time_constrained']
     min_time_diffusion = configs['gaps-and-fixes']['min_time_diffusion']
+    max_bound_gapFill = configs['gaps-and-fixes']['max_bound_gapFill']
 
     output_path = csv_path + '\\' + configs['path']['output_folder_name']
     if not os.path.isdir(output_path):
@@ -48,7 +49,7 @@ def main():
         print_log('Fixing:', 'Video', header[0], 'Cell', header[1], 'Track', header[2])
 
         # Fill Gaps
-        _, track, pos = process_gaps(track, pos, lambda l, r: max(l, r))
+        _, track, pos = process_gaps(track, pos, lambda l, r, dur: 1 if l == 2 and r == 2 and dur > max_bound_gapFill else min(l, r))
         print_log('\t-> Gap:', _, 'filled')
         counts_gap += _
 
@@ -58,8 +59,14 @@ def main():
         counts_event += _
 
         __ = 0
+
+        # Pass 3: CD -> FD, Merge
+        _, events3 = pass_events(events, 1, lambda l,r: 2 if l == 2 and r == 2 else 0, min_time_constrained)
+        print_log('\t-> Pass 3:', _, 'events relabeled.')
+        __ += _
+
         # Pass 1: FD -> CD, Merge
-        _, events1 = pass_events(events, 0, 1, min_time_diffusion)
+        _, events1 = pass_events(events3, 0, 1, min_time_diffusion)
         print_log('\t-> Pass 1:', _, 'events relabeled.')
         __ += _
 
@@ -68,10 +75,8 @@ def main():
         print_log('\t-> Pass 2:', _, 'events relabeled.')
         __ += _
 
-        # Pass 3: CD -> FD, Merge
-        _, events3 = pass_events(events2, 1, 0, min_time_constrained)
-        print_log('\t-> Pass 3:', _, 'events relabeled.')
-        __ += _
+        events3 = events2
+
 
         print_log('\t-> Pass Complete:', __, 'relabeling performed,', len(events3), 'events left.')
         counts_operations += __
@@ -117,14 +122,23 @@ def pass_events(events, ori, sub, min_time):
     for i in range(len(events)):
         bvr, event = events[i]
         event = event.copy()
+        if not type(sub) == int:
+            l = -1 if i-1 < 0 else events[i-1][0]
+            r = -1 if i+1 >= len(events) else events[i+1][0]
         if not bvr == ori:
             continue
         if len(event) >= min_time:
             continue
         count += 1
         for f in range(len(event)):
-            event[f] = np.array(list(event[f][:5]) + behaviors[sub] + [event[f][9]])
-        events[i] = (sub, event)
+            if type(sub) == int:
+                event[f] = np.array(list(event[f][:5]) + behaviors[sub] + [event[f][9]])
+            else:
+                event[f] = np.array(list(event[f][:5]) + behaviors[sub(l, r)] + [event[f][9]])
+        if type(sub) == int:
+            events[i] = (sub, event)
+        else:
+            events[i] = (sub(l,r), event)
     result_events = []
     record_events = [events[0]]
     i = 1
@@ -190,7 +204,7 @@ def process_gaps(track, pos, criteria):
             f += 1
             continue
         fr = track[f-1][3] + 1
-        bound = behaviors[criteria(track[f-1][8], track[f][8])] # Behavior
+        bound = behaviors[criteria(track[f-1][8], track[f][8], track[f][3]-track[f-1][3] + 1)] # Behavior
         template = list(track[f-1][:3]).copy()
 
         # Gap filling
@@ -215,6 +229,7 @@ def slice_tracks(tracks, headers):
         if not np.all(headers[i] == save):
             save = headers[i].copy()
             indices.append(i)
+    indices.append(headers.shape[0])
 
     tracks_sliced = []
     for i in range(len(indices) - 1):

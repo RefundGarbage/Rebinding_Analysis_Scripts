@@ -7,13 +7,16 @@ import time
 import tifffile
 
 def main():
-    csv_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking'
-    mask_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\_seg'
+    csv_path = 'D:\\Microscopy\\SMS_BP-master\\test1\\Trackmate_100ms\\timelapse\\AnalysisRebindCBC_start0_Quality'  # csv from trackmate
+    mask_path = 'D:\\Microscopy\\SMS_BP-master\\test1\\Trackmate\\seg'  # *.png
+
+    outpath = csv_path + "\\_ColBD_LIFEmx100mn10"
 
     enable_fixed_particle = False
     use_gap_fixes = True
     particle_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\particles_result'
-    max_frame = 2000
+
+    max_frame = 50000
 
     colors = {
         'Cell_Background': [0, 0, 0],
@@ -30,7 +33,6 @@ def main():
 
     masks = natsorted(get_file_names_with_ext(mask_path, 'png'))
     outlines = natsorted(get_file_names_with_ext(mask_path, 'txt'))
-    outpath = csv_path + "\\_ColBD_LIFE"
     tracks = pd.read_csv((outpath + "\\_ColBD_LIFE_bound_decisions.csv") if not use_gap_fixes else
                          (outpath + "\\_ColBD_LIFE_gaps-and-fixes_decisions.csv"))
     tracks = tracks.loc[:, ~tracks.columns.str.contains('^Unnamed')]
@@ -128,6 +130,7 @@ def slice_tracks(tracks, headers):
         if not np.all(headers[i] == save):
             save = headers[i].copy()
             indices.append(i)
+    indices.append(headers.shape[0])
 
     tracks_sliced = []
     for i in range(len(indices) - 1):

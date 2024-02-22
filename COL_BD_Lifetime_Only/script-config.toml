@@ -4,37 +4,103 @@
 # Path to segmented masks, .png and .txt files required from Cellpose
 # mask_path = ""
 
-csv_path = "F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\Tracking"
-mask_path = "F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\_seg"
-output_folder_name = '_ColBD_LIFE'
+#20ms simulation#####
+csv_path = 'D:\\Microscopy\\SMS_BP-master\\test9\\timelapse\\AnalysisRebindCBC_start0_Quality'  # csv from trackmate
+mask_path = 'D:\\Microscopy\\SMS_BP-master\\test9\\seg'  # *.png
+
+
+#100ms continious ###################################################################
+#csv_path = 'F:\\_Microscopy\\_Rebinding\\Reanalized2023\\DnaQhalotag_bg\\timelapse'  # csv from trackmate
+#mask_path = 'F:\\_Microscopy\\_Rebinding\\Reanalized2023\\DnaQhalotag_bg\\seg'  # *.png
+
+#csv_path = 'F:\\_Microscopy\\_Rebinding\\Reanalized2023\\20230802_dnaqH\\timelapse'  # csv from trackmate
+#mask_path = 'F:\\_Microscopy\\_Rebinding\\Reanalized2023\\20230802_dnaqH\\seg'  # *.png
+
+#csv_path = 'F:\\_Microscopy\\Rawdates\\20230913_ypetB_haloQ\\Images\\timelapse\\101023\\AnalysisRebindCBC_1010123_start0'  # csv from trackmate
+#mask_path = 'F:\\_Microscopy\\Rawdates\\20230913_ypetB_haloQ\\Images\\seg\\seg101023'  # *.png
+
+#csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr212\\AnalysisRebindCBC_11146dia_dog'  # csv from trackmate
+#mask_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr212'  # *.png
+
+#csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr208\\pr208_AnalysisRebindCBC1114_6diam_Dog'  # csv from trackmate
+#mask_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr208'  # *.png
+
+#csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr208n\\AnalysisRebindCBC_11146diam_DOG'  # csv from trackmate
+#mask_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr208n'  # *.png
+
+#csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR212' # csv from trackmate
+#mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr212\\100ms\\set1' # *.png
+
+#csv_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\COMB\\AnalysisRebindCBC_5quality\\PR212' # csv from trackmate
+#mask_path = 'F:\\_Microscopy\\Rawdates\\202301109_TetR_haloQmutnWT\\Images\\seg\\pr212\\100ms\\set1' # *.png
+
+#csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr212\\AnalysisRebindCBC_11146dia_dog'  # csv from trackmate
+#mask_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\seg_Copy\\pr212'  # *.png
+
+
+# 20i100ms ##########################################################################
+#csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'
+#mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\seg\\all'  # *.png
+
+#csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\set2'
+#mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\seg\\set2'  # *.png
+
+#csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\timelapse\\AnalysisRebindCBC_start0_Quality5'  # csv from trackmate
+#mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\seg\\all'  # *.png
+
+#csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\timelapse\\Set2'  # csv from trackmate
+#mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA3\\seg\\seg2'  # *.png
+
+#csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\AnalysisRebindCBC_start0_Quality5'  # csv from trackmate
+#mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\seg\\all'  # *.png
+
+#csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\set2'  # csv from trackmate
+#mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\seg\\set2'  # *.png
+
+#csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'
+#mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\seg\\all'  # *.png
+
+#csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA5\\timelapse'  # csv from trackmate
+#mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA5\\seg'  # *.png
+
+#csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\timelapse'  # csv from trackmate
+#mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\seg'  # *.png
+
+
+
+
+
+
+output_folder_name = '_ColBD_LIFEmx100mn10'
 
 [toggle]
 use_gap_fixed = true # for rebind-analysis to use gap-fixed
 
 [track-sorting]
-allowed_gap_max = 20
-allowed_track_length_min = 50
-allowed_track_length_max = 1500
+allowed_gap_max = 8
+allowed_track_length_min = 60
+allowed_track_length_max = 15000000
 dist_range = 5
-allowed_overlap = 30
+allowed_overlap = 300
 
 [bound-classification]
 distance_threshold = 3.0
 distance_threshold_strict = 1.6
 
 [gaps-and-fixes]
-min_time_strict = 5
-min_time_constrained = 5
-min_time_diffusion = 5
+min_time_strict = 4
+min_time_constrained = 2
+min_time_diffusion = 2
+max_bound_gapFill = 3
 
 [rebind-analysis]
 rebind_distance_same = 1.0 # Determines rebinds to same particles < parameter
 rebind_distance_diff = 5.0 # Determines rebinds to diff particles > parameter
 min_time_bound_strict = 5
 min_time_bound_constrained = 5
-min_time_rebinding_relaxed = 5
-min_time_rebinding_strict = 5
-min_time_diffusion = 2
+min_time_rebinding_relaxed = 10
+min_time_rebinding_strict = 10
+min_time_diffusion = 5
 min_time_diffusion_subsequent = 2 # minimum time required for subsequent event after diffusion
-max_time_rebinding = 200 # after which it will be counted unsuccessful
-max_time_constrained = 200 # after which it will be counted unsuccessful
+max_time_rebinding = 100 # after which it will be counted unsuccessful
+max_time_constrained = 100 # after which it will be counted unsuccessful
