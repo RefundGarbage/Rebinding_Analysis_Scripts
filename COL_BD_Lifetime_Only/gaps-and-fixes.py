@@ -61,21 +61,20 @@ def main():
         __ = 0
 
         # Pass 3: CD -> FD, Merge
-        _, events3 = pass_events(events, 1, lambda l,r: 2 if l == 2 and r == 2 else 0, min_time_constrained)
+        _, events1 = pass_events(events, 1, lambda l,r: 2 if l == 2 and r == 2 else 0, min_time_constrained)
         print_log('\t-> Pass 3:', _, 'events relabeled.')
         __ += _
 
         # Pass 1: FD -> CD, Merge
-        _, events1 = pass_events(events3, 0, 1, min_time_diffusion)
+        _, events2 = pass_events(events1, 0, 1, min_time_diffusion)
         print_log('\t-> Pass 1:', _, 'events relabeled.')
         __ += _
 
         # Pass 2: SB -> CD, Merge
-        _, events2 = pass_events(events1, 2, 1, min_time_strict)
+        _, events3 = pass_events(events2, 2, 1, min_time_strict)
         print_log('\t-> Pass 2:', _, 'events relabeled.')
         __ += _
 
-        events3 = events2
 
 
         print_log('\t-> Pass Complete:', __, 'relabeling performed,', len(events3), 'events left.')

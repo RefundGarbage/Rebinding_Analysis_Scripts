@@ -5,18 +5,27 @@ import os
 from natsort import natsorted
 import time
 import tifffile
+import tomllib
 
 def main():
-    csv_path = 'D:\\Microscopy\\SMS_BP-master\\test1\\Trackmate_100ms\\timelapse\\AnalysisRebindCBC_start0_Quality'  # csv from trackmate
-    mask_path = 'D:\\Microscopy\\SMS_BP-master\\test1\\Trackmate\\seg'  # *.png
 
-    outpath = csv_path + "\\_ColBD_LIFEmx100mn10"
+    __location__ = os.path.realpath(
+        os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    config_path = os.path.join(__location__, 'script-config.toml')
+    with open(config_path, 'rb') as config_file:
+        configs = tomllib.load(config_file)
+
+    csv_path = configs['path']['csv_path']
+    mask_path = configs['path']['mask_path']
+
+
+    outpath = csv_path + "\\_ColBD_LIFE_FInal"
 
     enable_fixed_particle = False
     use_gap_fixes = True
     particle_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\particles_result'
 
-    max_frame = 50000
+    max_frame = 2000
 
     colors = {
         'Cell_Background': [0, 0, 0],

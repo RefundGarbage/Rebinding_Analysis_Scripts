@@ -84,6 +84,11 @@ def main():
 
     proportion_count = np.array([0, 0, 0])
 
+    abound_time = np.array([0, 0])
+    abound_dest = np.array([0, 0])
+    abound_dest_diffusion = np.array([0, 0])
+
+
     for i in range(len(tracks)):
         header = headers[i]
         track = list(tracks[i][['Frame', 'x', 'y', 'Bound']].to_numpy())
@@ -151,6 +156,13 @@ def main():
             rebind_strict_time_all.append(list(header.copy()) + [j, rbtime])
             j += 1
 
+        ########
+
+        bf_time, bf_counts = diffusion_record(track, lambda x: x < 1, min_time_bound_strict,
+                                              min_time_diffusion_subsequent)
+        abound_dest = np.add(abound_dest, bf_counts)
+        ########
+
         # Bound time calculations, now must be flanked by diffusions
         _, __, ___, ____, _____, bd1 = (
             rebind_record_proximity(track, rebind_distance_same, rebind_distance_diff, lambda x: not x > 1,
@@ -199,6 +211,18 @@ def main():
     print_log('\nStrict Bound time:')
     print_log('->', str(pd.Series([x[4] for x in bound_flanked_strict_record]).describe()).replace('\n', '\n-> '), '\n')
 
+    print_log('\nBound to diffusion by Frame')
+    print_log('-> Count of Bound to Bound:', abound_dest[0])
+    print_log('-> Count of Bound to Diffusion:', abound_dest[1])
+
+    if abound_dest[1] == 0 or abound_dest[0] == 0:
+        op = 0
+    else:
+        op = float(abound_dest[1]) / float(abound_dest[0] + abound_dest[1])
+
+    print_log('-> Probability of Bound to diffusion:', op)
+
+
 
     print_log('__________Rebind_________')
 
@@ -216,7 +240,14 @@ def main():
     print_log('Strict to Strict Rebind Probability:')
     print_log('-> Successful:', len(rebind_strict))
     print_log('-> Unsuccessful:', rebind_strict_unsuccessful)
-    print_log('-> Probability', float(len(rebind_strict)) / float(len(rebind_strict) + rebind_strict_unsuccessful), '\n')
+
+    if len(rebind_strict) == 0 or rebind_strict_unsuccessful == 0:
+        op1 = 0
+    else:
+        op1 = float(len(rebind_strict)) / float(len(rebind_strict) + rebind_strict_unsuccessful)
+
+
+    print_log('-> Probability', op1, '\n' )
 
 
 
@@ -251,8 +282,14 @@ def main():
     print_log('\nAll Diffusion tracks with strict binding by Frame')
     print_log('-> Count of Diffusion to Diffusion:', all_diffusion_dest_strict[0])
     print_log('-> Count of Diffusion to Bound:', all_diffusion_dest_strict[1])
-    print_log('-> Probability of Diffusion to Bound:',
-              float(all_diffusion_dest_strict[1]) / float(all_diffusion_dest_strict[0] + all_diffusion_dest_strict[1]))
+
+    if all_diffusion_dest_strict[0] == 0 or all_diffusion_dest_strict[1] == 0:
+        op2 = 0
+    else:
+        op2 = float(all_diffusion_dest_strict[1]) / float(all_diffusion_dest_strict[0] + all_diffusion_dest_strict[1])
+
+
+    print_log('-> Probability of Diffusion to Bound:', op2)
 
     print_log('\nAll Diffusion average time (Frame):')
     print_log('->', str(pd.Series(all_diffusion_time).describe()).replace('\n', '\n-> '), '\n')
@@ -263,8 +300,13 @@ def main():
               float(proportion_count[0]) / np.sum(proportion_count))
     print_log('Count of constrained diffusion: ', proportion_count[1], '-> Proportion:',
               float(proportion_count[1]) / np.sum(proportion_count))
-    print_log('Count of strict binding: ', proportion_count[2], '-> Proportion:',
-              float(proportion_count[2]) / np.sum(proportion_count))
+
+    if proportion_count[2] == 0:
+        op3 = 0
+    else:
+        op3 = float((proportion_count[2]) / np.sum(proportion_count))
+
+    print_log('Count of strict binding: ', proportion_count[2], '-> Proportion:', op3)
 
 
 

@@ -6,10 +6,20 @@ import os
 from natsort import natsorted
 import logging
 import shutil
+import tomllib
 
 def main():
-    #mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\seg\\all'  # *.png
-    mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\seg\\all'
+
+    __location__ = os.path.realpath(
+        os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    config_path = os.path.join(__location__, 'script-config.toml')
+    with open(config_path, 'rb') as config_file:
+        configs = tomllib.load(config_file)
+
+    csv_path = configs['path']['csv_path']
+    mask_path = configs['path']['mask_path']
+    output_folder_name = configs['path']['output_folder_name']
+
     masks = natsorted(get_file_names_with_ext(mask_path, 'png'))
     table = []
     columns = ['Mask #', 'Mask Name', '# Cells', 'Cell', 'Area', 'Length']
@@ -24,7 +34,8 @@ def main():
             l = np.sqrt(np.power(maxx-minx+1, 2) + np.power(maxy-miny+1, 2))
             table.append([i + 1, masks[i].split('\\')[-1], n_cell, j + 1, sizes[1][j + 1], l])
     table = pd.DataFrame(table, columns=columns)
-    table.to_csv(mask_path + '\\^cell-info.csv')
+    table.to_csv(mask_path + '\\_cell-info.csv')
+    table.to_csv(csv_path + "\\" + output_folder_name + '\\_cell-info.csv')
     return
 
 def tabulate_cells(mask, n_cell):
