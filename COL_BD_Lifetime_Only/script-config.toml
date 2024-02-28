@@ -6,8 +6,8 @@
 
 #20ms simulation#####
 
-csv_path = 'D:\\Microscopy\\SMS_BP-master\\test9\\timelapse\\AnalysisRebindCBC_start0_Quality'  # csv from trackmate
-mask_path = 'D:\\Microscopy\\SMS_BP-master\\test9\\seg'  # *.png
+csv_path = 'D:\Microscopy\SMS_BP-master\testScenario1\timelapse\AnalysisRebindCBC_start0_Quality'  # csv from trackmate
+mask_path = 'D:\Microscopy\SMS_BP-master\testScenario1\seg'  # *.png
 
 #csv_path = 'D:\\Microscopy\\SMS_BP-master\\test1\\Trackmate_100ms\\timelapse\\AnalysisRebindCBC_start0_Quality'  # csv from trackmate
 #mask_path = 'D:\\Microscopy\\SMS_BP-master\\test1\\Trackmate_100ms\\seg'  # *.png

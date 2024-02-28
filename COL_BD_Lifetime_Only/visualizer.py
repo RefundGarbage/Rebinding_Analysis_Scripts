@@ -25,7 +25,7 @@ def main():
     use_gap_fixes = True
     particle_path = 'F:\\MicroscopyTest\\20231210_Dataset\\Fixed_particle\\wt\\particles_result'
 
-    max_frame = 2000
+    max_frame = 50000
 
     colors = {
         'Cell_Background': [0, 0, 0],

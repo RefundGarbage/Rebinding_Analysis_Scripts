@@ -29,8 +29,8 @@ def find_probability(mean):
         raise ValueError("Optimization failed to converge")
 
 n_flips = 10000
-p_success = 0.02702595877350029
-expected_mean = 36.001462496883676
+p_success = 0.025853889943074002
+expected_mean = 2.0
 
 probabilities = streak_distribution(n_flips, p_success)
 
