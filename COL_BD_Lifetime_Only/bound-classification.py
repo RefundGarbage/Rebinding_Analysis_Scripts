@@ -110,8 +110,8 @@ def main():
             .assign(ContrictedDiffusion=decision_cdiffusion)
             .assign(Bound=decision_overall)
         )
-    pd.concat(output_relaxed).to_csv(output_path + '\\_ColBD_LIFE_bound_relaxed.csv')
-    pd.concat(output_strict).to_csv(output_path + '\\_ColBD_LIFE_bound_strict.csv')
+    #pd.concat(output_relaxed).to_csv(output_path + '\\_ColBD_LIFE_bound_relaxed.csv')
+    #pd.concat(output_strict).to_csv(output_path + '\\_ColBD_LIFE_bound_strict.csv')
     pd.concat(output_both).to_csv(output_path + '\\_ColBD_LIFE_bound_decisions.csv')
     return
 
@@ -144,6 +144,7 @@ def slice_tracks(tracks, headers):
         if not np.all(headers[i] == save):
             save = headers[i].copy()
             indices.append(i)
+    indices.append(headers.shape[0])
 
     tracks_sliced = []
     for i in range(len(indices) - 1):

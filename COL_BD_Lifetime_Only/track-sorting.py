@@ -74,6 +74,10 @@ def main():
                 continue
             print_log(' [ ELIMINATED BY CELL MASK:', _, ']')
 
+            if len(spots_cell) == 0:
+                print_log('\t\t [ ALL SPOTS ELIMINATED ]')
+                continue
+
             tracks_cell = track_separation(spots_cell)
             print_log('\t\t: # Tracks in Cell:', len(tracks_cell))
 
