@@ -24,6 +24,7 @@ def main():
     allowed_track_length_max = configs['track-sorting']['allowed_track_length_max']
     dist_range = configs['track-sorting']['dist_range']
     allowed_overlap = configs['track-sorting']['allowed_overlap']
+    concurrent_max = configs['track-sorting']['concurrent_max']
 
     dist_none = float('inf')
 
@@ -81,13 +82,23 @@ def main():
             tracks_cell = track_separation(spots_cell)
             print_log('\t\t: # Tracks in Cell:', len(tracks_cell))
 
+            # Eliminate repeated frames in the same track <- allowed_overlap parameter
             _ = 0
             for k in range(len(tracks_cell)):
                 tracks_cell[k], __ = eliminate_repeated_frames(tracks_cell[k])
                 _ += __
             print_log('\t\t: # Repeated Spots eliminated:', _)
             if _ > allowed_overlap:
+                print_log('\t\t: * Overlap within track exceeds threshold: Aborting Cell')
                 continue
+
+            # Eliminate repeated frames in different tracks if length exceeds <- concurrent_max parameter
+            removal_queue, frame_counts = concurrent_count(tracks_cell, concurrent_max)
+            if len(removal_queue) > 0:
+                for k in range(len(tracks_cell)):
+                    tracks_cell[k] = remove_frames(tracks_cell[k], removal_queue)
+                print_log('\t\t: # Concurrent Frames removed:', len(removal_queue))
+
             tracks_ind = []
             _ = 0
             _1 = 0
@@ -120,6 +131,50 @@ TRACKS
 
 def distance(p1, p2):
     return np.sqrt(np.power(p1[0] - p2[0], 2) + np.power(p1[1] - p2[1], 2))
+
+
+# Remove concurrent spots based on the length of overlap
+def concurrent_count(tracks, max_concurrent):
+    frame_counts = {}
+    for i in range(len(tracks)):
+        track = tracks[i]
+        for f in range(len(track)):
+            frame = track[f][0]
+            if not frame in frame_counts:
+                frame_counts[frame] = 1
+            else:
+                frame_counts[frame] += 1
+
+    removal = []
+    que = []
+    frame_keys = sorted(list(frame_counts.keys()))
+    i = 0
+    while i < len(frame_keys):
+        count = frame_counts[frame_keys[i]]
+        if count > 1:
+            que.append(frame_keys[i])
+        else:
+            if len(que) > 0:
+                interval = que[-1] - que[0] + 1
+                if interval > max_concurrent:
+                    removal += que
+                que = []
+        i += 1
+    if len(que) > 0:
+        interval = que[-1] - que[0] + 1
+        if interval > max_concurrent:
+            removal += que
+    return removal, frame_counts
+
+# Removing frames in tracks within a queue
+def remove_frames(track, queue):
+    res = []
+    for f in range(len(track)):
+        if track[f][0] in queue:
+            continue
+        else:
+            res.append(track[f])
+    return res
 
 # Distance Calculations appended to the end of spots
 def track_distance_tabulate(track, indices, dist_none):

@@ -85,7 +85,8 @@ allowed_gap_max = 10
 allowed_track_length_min = 60
 allowed_track_length_max = 150000000
 dist_range = 5
-allowed_overlap = 30
+allowed_overlap = 30 # allowed total repeated frames in tracks in a cell, eliminate all tracks if exceeds
+concurrent_max = 10 # max concurrent frames in *different* tracks in a cell, eliminate the frames if exceeds.
 
 [bound-classification]
 distance_threshold = 2.6
