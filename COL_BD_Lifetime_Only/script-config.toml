@@ -79,6 +79,7 @@ output_folder_name = '_ColBD_LIFE_FInal'
 
 [toggle]
 use_gap_fixed = true # for rebind-analysis to use gap-fixed
+filter_by_binding_prop = true # filter tracks after gap-fixes
 
 [track-sorting]
 allowed_gap_max = 10
@@ -97,6 +98,7 @@ min_time_strict = 8
 min_time_constrained = 4
 min_time_diffusion = 2
 max_bound_gapFill = 3
+min_prop_binding = 0.1 # for both constricted and strict, filter condition after gap-fixes
 
 [rebind-analysis]
 rebind_distance_same = 1.0 # Determines rebinds to same particles < parameter

@@ -17,10 +17,12 @@ def main():
     csv_path = configs['path']['csv_path']
 
     # Some parameters
+    filter_by_binding_prop = configs['toggle']['filter_by_binding_prop']
     min_time_strict = configs['gaps-and-fixes']['min_time_strict']
     min_time_constrained = configs['gaps-and-fixes']['min_time_constrained']
     min_time_diffusion = configs['gaps-and-fixes']['min_time_diffusion']
     max_bound_gapFill = configs['gaps-and-fixes']['max_bound_gapFill']
+    min_prop_binding = configs['gaps-and-fixes']['min_prop_binding']
 
     output_path = csv_path + '\\' + configs['path']['output_folder_name']
     if not os.path.isdir(output_path):
@@ -37,6 +39,7 @@ def main():
     counts_gap = 0
     counts_event = 0
     counts_operations = 0
+    counts_filtered = 0
     output_tracks = []
 
     for i in range(len(tracks)):
@@ -85,6 +88,19 @@ def main():
         track2 = events_to_track(events2)
         track3 = events_to_track(events3)
 
+        # Filter by binding proportion, weighted
+        if filter_by_binding_prop:
+            prop_binding = prop_counting(track3, (1.0, 1.0)) # weights (constricted, strict)
+            print_log('\t-> Filter (BINDING PROPORTION):', prop_binding, 'bound')
+
+            if(prop_binding < min_prop_binding):
+                print_log('\t\t: FAIL')
+                counts_filtered += 1
+                continue
+            else:
+                print_log('\t\t: PASS')
+
+
         trackdf = pd.DataFrame(np.array(track3)[:, :5], columns=['Video #', 'Cell', 'Track', 'Frame', 'Intensity'])
         trackdf = (trackdf.assign(GapFixed=np.array(track)[:, 8],
                                   Pass1=np.array(track1)[:, 8], Pass2=np.array(track2)[:, 8], Pass3=np.array(track3)[:, 8],
@@ -99,12 +115,27 @@ def main():
     print_log('__________________________________________________')
     print_log('Complete: \n\t-> Frame Gap Filled:', counts_gap,
               '\n\t-> Events Separated:', counts_event,
-              '\n\t-> Relabeling Performed:', counts_operations
+              '\n\t-> Relabeling Performed:', counts_operations,
+              ('\n\t-> Filtered Tracks (by bound proportion):', counts_filtered) if filter_by_binding_prop else ''
               )
 
     print_log('Saving to:', output_path + '\\_ColBD_LIFE_gaps-and-fixes_decisions.csv')
     pd.concat(output_tracks).to_csv(output_path + '\\_ColBD_LIFE_gaps-and-fixes_decisions.csv')
     return
+
+# Proportion calculation, weighted by behavior
+def prop_counting(track, weights):
+    w1 = weights[0] # constricted
+    w2 = weights[1] # strict
+    count1 = 0.0
+    count2 = 0.0
+    for spot in track:
+        if spot[-2] == 2:
+            count2 += w2
+        elif spot[-2] == 1:
+            count1 += w1
+    return (count1 + count2) / len(track)
+
 
 # Reconstruct Track from Events
 def events_to_track(events):
