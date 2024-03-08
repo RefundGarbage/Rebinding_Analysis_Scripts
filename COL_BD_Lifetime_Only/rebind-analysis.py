@@ -336,14 +336,14 @@ def main():
         os.mkdir(smaug_path)
     except:
         os.mkdir(smaug_path)
-    csv_write(smaug_path + '\\relaxed_rebinds_spotsAll.csv', rebind_relaxed_spots_all)
-    csv_write(smaug_path + '\\relaxed_rebinds_spotsSame.csv', rebind_relaxed_spots_same)
-    csv_write(smaug_path + '\\relaxed_rebinds_spotsDiff.csv', rebind_relaxed_spots_diff)
-    csv_write(smaug_path + '\\relaxed_rebinds_spotsTrack.csv', rebind_relaxed_spots_entiretrack)
-    csv_write(smaug_path + '\\strict_rebinds_spotsAll.csv', rebind_strict_spots_all)
+    #csv_write(smaug_path + '\\relaxed_rebinds_spotsAll.csv', rebind_relaxed_spots_all)
+    #csv_write(smaug_path + '\\relaxed_rebinds_spotsSame.csv', rebind_relaxed_spots_same)
+    #csv_write(smaug_path + '\\relaxed_rebinds_spotsDiff.csv', rebind_relaxed_spots_diff)
+    #csv_write(smaug_path + '\\relaxed_rebinds_spotsTrack.csv', rebind_relaxed_spots_entiretrack)
+    csv_write(smaug_path + '\\strict_rebinds_spotsRebind.csv', rebind_strict_spots_all)
     csv_write(smaug_path + '\\strict_rebinds_spotsSame.csv', rebind_strict_spots_same)
     csv_write(smaug_path + '\\strict_rebinds_spotsDiff.csv', rebind_strict_spots_diff)
-    csv_write(smaug_path + '\\strict_rebinds_spotsTrack.csv', rebind_strict_spots_entiretrack)
+    csv_write(smaug_path + '\\strict_rebinds_spotsAll.csv', rebind_strict_spots_entiretrack)
 
     rebind_columns = ['Video #', 'Cell', 'Track', 'From', 'To', 'Time', 'Speed', 'Distance', 'x1', 'y1', 'x2', 'y2']
     rebind_relaxed = pd.DataFrame(rebind_relaxed, columns=rebind_columns).astype({'Time': 'int'})
@@ -391,6 +391,8 @@ def event_format_trackmate(events):
     for track in events:
         for event in track:
             for spot in event:
+                if spot[1] < 0 or spot[2] < 0:
+                    continue
                 formatted.append([i, spot[0], spot[1], spot[2], 10000])
             i += 1
     return formatted

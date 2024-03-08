@@ -29,6 +29,13 @@ def main():
         raise ValueError('Directory do not exist, please run track-sorting.py first.')
     logging_setup(output_path, 'gaps-and-fixes')
 
+    smaug_path = output_path + '\\SMAUG_GAP-FIXED_SPOTS'
+    try:
+        shutil.rmtree(smaug_path)
+        os.mkdir(smaug_path)
+    except:
+        os.mkdir(smaug_path)
+
     print_log('Reading from csv:', output_path + '\\_ColBD_LIFE_bound_decisions.csv')
     tracks = pd.read_csv(output_path + '\\_ColBD_LIFE_bound_decisions.csv')
     tracks = tracks.loc[:, ~tracks.columns.str.contains('^Unnamed')]
@@ -41,6 +48,14 @@ def main():
     counts_operations = 0
     counts_filtered = 0
     output_tracks = []
+
+    # SMAUG outputs
+    smaug_filtered_pass = []
+    smaug_filtered_fail = []
+    smaug_unfiltered = []
+    smaug_filtered_strict = []
+    smaug_filtered_cd = []
+    smaug_filtered_dif = []
 
     for i in range(len(tracks)):
         header = headers[i]
@@ -89,6 +104,8 @@ def main():
         track3 = events_to_track(events3)
 
         # Filter by binding proportion, weighted
+        smaug_all = track_to_smaug(track3, pos)
+        smaug_unfiltered.append(smaug_all)
         if filter_by_binding_prop:
             prop_binding = prop_counting(track3, (1.0, 1.0)) # weights (constricted, strict)
             print_log('\t-> Filter (BINDING PROPORTION):', prop_binding, 'bound')
@@ -96,10 +113,15 @@ def main():
             if(prop_binding < min_prop_binding):
                 print_log('\t\t: FAIL')
                 counts_filtered += 1
+                smaug_filtered_fail.append(smaug_all)
                 continue
             else:
                 print_log('\t\t: PASS')
+                smaug_filtered_pass.append(smaug_all)
 
+        smaug_filtered_dif += event_to_smaug(events3, pos, 0)
+        smaug_filtered_cd += event_to_smaug(events3, pos, 1)
+        smaug_filtered_strict += event_to_smaug(events3, pos, 2)
 
         trackdf = pd.DataFrame(np.array(track3)[:, :5], columns=['Video #', 'Cell', 'Track', 'Frame', 'Intensity'])
         trackdf = (trackdf.assign(GapFixed=np.array(track)[:, 8],
@@ -121,7 +143,56 @@ def main():
 
     print_log('Saving to:', output_path + '\\_ColBD_LIFE_gaps-and-fixes_decisions.csv')
     pd.concat(output_tracks).to_csv(output_path + '\\_ColBD_LIFE_gaps-and-fixes_decisions.csv')
+    print_log('Saving to:', smaug_path, '(SMAUG files)')
+    csv_write(smaug_path + '\\unfiltered_spotsAll.csv', smaug_format(smaug_unfiltered))
+    if filter_by_binding_prop:
+        csv_write(smaug_path + '\\filtered_passed_spotsAll.csv', smaug_format(smaug_filtered_pass))
+        csv_write(smaug_path + '\\filtered_failed_spotsAll.csv', smaug_format(smaug_filtered_fail))
+    csv_write(smaug_path + '\\separated_spotsDiffusing.csv', smaug_format(smaug_filtered_dif))
+    csv_write(smaug_path + '\\separated_spotsConstricted.csv', smaug_format(smaug_filtered_cd))
+    csv_write(smaug_path + '\\separated_spotsBound.csv', smaug_format(smaug_filtered_strict))
+
     return
+
+
+def smaug_format(tracks):
+    formatted = []
+    for i in range(len(tracks)):
+        for spot in tracks[i]:
+            spot[0] = i + 1
+            formatted.append(spot)
+    return formatted
+
+# Event with specific behavior to smaug, gap excluded
+def event_to_smaug(events, pos, behavior):
+    smaugs = []
+    i = 0
+    for b, event in events:
+        if b == behavior:
+            smaug = []
+            for k in range(len(event)):
+                spot = event[k]
+                p = pos[i]
+                i += 1
+                if p[0] == -1 or p[1] == -1:
+                    continue
+                smaug.append([-1, spot[3], p[0], p[1], 10000])
+            smaugs.append(smaug)
+        else:
+            i += len(event)
+    return smaugs
+
+# Entire Track to SMAUG format
+# Track number, Frame, x, y, Intensity(10k) -> skip -1
+def track_to_smaug(track, pos):
+    smaug = []
+    for i in range(len(track)):
+        spot = track[i]
+        p = pos[i]
+        if p[0] == -1 or p[1] == -1:
+            continue
+        smaug.append([-1, spot[3], p[0], p[1], 10000])
+    return smaug
 
 # Proportion calculation, weighted by behavior
 def prop_counting(track, weights):
@@ -265,6 +336,13 @@ def slice_tracks(tracks, headers):
     for i in range(len(indices) - 1):
         tracks_sliced.append(tracks.iloc[indices[i] : indices[i+1], :])
     return tracks_sliced
+
+def csv_write(path, data):
+    with open(path, 'w', newline='') as file:
+        writer = csv.writer(file, delimiter=',')
+        for line in data:
+            writer.writerow(line)
+        file.close()
 
 '''
 ================================================================================================================
