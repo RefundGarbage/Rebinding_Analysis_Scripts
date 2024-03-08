@@ -47,6 +47,8 @@ def main():
     counts_event = 0
     counts_operations = 0
     counts_filtered = 0
+    frames_filtered = 0
+    frames_total = 0
     output_tracks = []
 
     # SMAUG outputs
@@ -110,8 +112,10 @@ def main():
             prop_binding = prop_counting(track3, (1.0, 1.0)) # weights (constricted, strict)
             print_log('\t-> Filter (BINDING PROPORTION):', prop_binding, 'bound')
 
+            frames_total += len(track3)
             if(prop_binding < min_prop_binding):
                 print_log('\t\t: FAIL')
+                frames_filtered += len(track3)
                 counts_filtered += 1
                 smaug_filtered_fail.append(smaug_all)
                 continue
@@ -135,7 +139,9 @@ def main():
         output_tracks.append(trackdf)
 
     print_log('__________________________________________________')
-    print_log('Complete: \n\t-> Frame Gap Filled:', counts_gap,
+    print_log('Complete: '
+              '\n\t-> Fraction Filtered from total:', frames_filtered/frames_total,
+              '\n\t-> Frame Gap Filled:', counts_gap,
               '\n\t-> Events Separated:', counts_event,
               '\n\t-> Relabeling Performed:', counts_operations,
               ('\n\t-> Filtered Tracks (by bound proportion):', counts_filtered) if filter_by_binding_prop else ''
