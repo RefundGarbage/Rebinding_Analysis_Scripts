@@ -14,7 +14,7 @@ def calculate_mean(probabilities):
         mean += length * probability
     return mean
 
-def mean_streak_length(p, max_length=10000):
+def mean_streak_length(p, max_length=100000):
     mean = 0
     for k in range(1, max_length + 1):
         probability = (1 - p)**(k-1) * p
@@ -29,8 +29,8 @@ def find_probability(mean):
         raise ValueError("Optimization failed to converge")
 
 n_flips = 10000
-p_success = 0.025853889943074002
-expected_mean = 2.0
+p_success = .00001
+expected_mean = 1
 
 probabilities = streak_distribution(n_flips, p_success)
 
@@ -38,7 +38,7 @@ plt.bar(range(1, n_flips+1), probabilities[1:])  # Exclude index 0 (no streak)
 plt.xlabel('1/10 seconds')
 plt.ylabel('Probability')
 plt.title('Distribution of Track Lengths')
-plt.xlim(0, 10500)  # Adjusting x-axis limit to show only relevant streak lengths
+plt.xlim(0, 100000)  # Adjusting x-axis limit to show only relevant streak lengths
 plt.show()
 
 # Calculate the mean of the distribution

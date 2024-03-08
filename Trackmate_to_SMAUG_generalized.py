@@ -7,9 +7,9 @@ import time
 
 def main():
 
-    common_info = 'Simulation_scenario2_100ms'
+    common_info = 'Simulation_Wt_100ms'
 
-    csv_path = 'D:\\Microscopy\\SMS_BP-master\\testScenario2\\timelapse\\AnalysisRebindCBC_start0_Quality'
+    csv_path = 'D:\\Microscopy\\SMS_BP-master\\testScenario7SSGptWtFIX\\timelapse\\AnalysisRebindCBC_start0_Quality'
 
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'  #csv from trackmate
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\AnalysisRebindCBC_start0_Quality5'
