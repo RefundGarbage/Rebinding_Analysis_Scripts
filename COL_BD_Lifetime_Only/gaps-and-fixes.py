@@ -23,6 +23,7 @@ def main():
     min_time_diffusion = configs['gaps-and-fixes']['min_time_diffusion']
     max_bound_gapFill = configs['gaps-and-fixes']['max_bound_gapFill']
     min_prop_binding = configs['gaps-and-fixes']['min_prop_binding']
+    max_prop_binding = configs['gaps-and-fixes']['max_prop_binding']
 
     output_path = csv_path + '\\' + configs['path']['output_folder_name']
     if not os.path.isdir(output_path):
@@ -109,15 +110,22 @@ def main():
         smaug_all = track_to_smaug(track3, pos)
         smaug_unfiltered.append(smaug_all)
         if filter_by_binding_prop:
-            prop_binding = prop_counting(track3, (1.0, 1.0)) # weights (constricted, strict)
-            print_log('\t-> Filter (BINDING PROPORTION):', prop_binding, 'bound')
+            prop_binding = prop_counting(track3, (1.0, 1.0)) # weights (constricted, strict), for min
+            prop_binding_only_strict = prop_counting(track3, (0, 1.0)) # weights for max
+            print_log('\t-> Filter (MIN BINDING PROPORTION):', prop_binding, 'non-diffusing')
+            print_log('\t-> Filter (MAX BINDING PROPORTION):', prop_binding_only_strict, 'strictly bound')
 
             frames_total += len(track3)
             if(prop_binding < min_prop_binding):
-                print_log('\t\t: FAIL')
+                print_log('\t\t: FAIL by minimum proportion binding')
                 frames_filtered += len(track3)
                 counts_filtered += 1
                 smaug_filtered_fail.append(smaug_all)
+                continue
+            elif(prop_binding_only_strict > max_prop_binding):
+                print_log('\t\t: FAIL by maximum proportion binding')
+                frames_filtered += len(track3)
+                counts_filtered += 1
                 continue
             else:
                 print_log('\t\t: PASS')
@@ -140,11 +148,10 @@ def main():
 
     print_log('__________________________________________________')
     print_log('Complete: '
-              '\n\t-> Fraction Filtered from total:', frames_filtered/frames_total,
               '\n\t-> Frame Gap Filled:', counts_gap,
               '\n\t-> Events Separated:', counts_event,
               '\n\t-> Relabeling Performed:', counts_operations,
-              ('\n\t-> Filtered Tracks (by bound proportion):', counts_filtered) if filter_by_binding_prop else ''
+              '\n\t-> Fraction Filtered from total:', frames_filtered/frames_total,
               )
 
     print_log('Saving to:', output_path + '\\_ColBD_LIFE_gaps-and-fixes_decisions.csv')
