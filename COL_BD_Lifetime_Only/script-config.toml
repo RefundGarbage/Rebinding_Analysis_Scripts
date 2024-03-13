@@ -6,8 +6,8 @@
 
 #20ms simulation#####
 
-#csv_path = 'D:\\Microscopy\\SMS_BP-master\\test10\\timelapse\\AnalysisRebindCBC_start0_Quality'  # csv from trackmate
-#mask_path = 'D:\\Microscopy\\SMS_BP-master\\test10\\seg'  # *.png
+#csv_path = 'D:\\Microscopy\\SMS_BP-master2\\Final_Wt_1exp\\timelapse\\AnalysisRebindCBC_start0_Quality'  # csv from trackmate
+#mask_path = 'D:\\Microscopy\\SMS_BP-master2\\Final_Wt_1exp\\seg'  # *.png
 
 #csv_path = 'D:\\Microscopy\\SMS_BP-master\\testScenario7SSGpt_DmFIXREAL\\timelapse\\AnalysisRebindCBC_start0_Quality'  # csv from trackmate
 #mask_path = 'D:\\Microscopy\\SMS_BP-master\\testScenario7SSGptWtFIX\\seg'  # *.png
@@ -79,7 +79,7 @@ mask_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\seg\\all' 
 
 
 
-output_folder_name = '_ColBD_LIFE_FInalN2'
+output_folder_name = '_ColBD_LIFE_FInalest'
 
 [toggle]
 use_gap_fixed = true # for rebind-analysis to use gap-fixed
@@ -88,31 +88,31 @@ filter_by_binding_prop = true # filter tracks after gap-fixes
 [track-sorting]
 allowed_gap_max = 10
 allowed_track_length_min = 60
-allowed_track_length_max = 1500
+allowed_track_length_max = 900
 dist_range = 5
 allowed_overlap = 30 # allowed total repeated frames in tracks in a cell, eliminate all tracks if exceeds
 concurrent_max = 10 # max concurrent frames in *different* tracks in a cell, eliminate the frames if exceeds.
 
 [bound-classification]
 distance_threshold = 2.6
-distance_threshold_strict = 1.6
+distance_threshold_strict = 1.2
 
 [gaps-and-fixes]
-min_time_strict = 8
+min_time_strict = 4
 min_time_constrained = 4
-min_time_diffusion = 2
+min_time_diffusion = 3
 max_bound_gapFill = 3
-min_prop_binding = 0.06 # for both constricted and strict, filter condition after gap-fixes
+min_prop_binding = 0.08 # for both constricted and strict, filter condition after gap-fixes
 max_prop_binding = 0.95 # filter also for all-bound tracks, most-likely dirt
 
 [rebind-analysis]
 rebind_distance_same = 1.0 # Determines rebinds to same particles < parameter
-rebind_distance_diff = 5.0 # Determines rebinds to diff particles > parameter
-min_time_bound_strict = 8
+rebind_distance_diff = 4.0 # Determines rebinds to diff particles > parameter
+min_time_bound_strict = 4
 min_time_bound_constrained = 4
-min_time_rebinding_relaxed = 4
+min_time_rebinding_relaxed = 0
 min_time_rebinding_strict = 10
-min_time_diffusion = 4
-min_time_diffusion_subsequent = 2 # minimum time required for subsequent event after diffusion
+min_time_diffusion = 0
+min_time_diffusion_subsequent = 1 # minimum time required for subsequent event after diffusion
 max_time_rebinding = 50 # after which it will be counted unsuccessful
 max_time_constrained = 50 # after which it will be counted unsuccessful

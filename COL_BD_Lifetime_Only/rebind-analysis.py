@@ -158,7 +158,7 @@ def main():
 
         ########
 
-        bf_time, bf_counts = diffusion_record(track, lambda x: x < 1, min_time_bound_strict,
+        bf_time, bf_counts = diffusion_record(track, lambda x: x < 2, min_time_bound_strict,
                                               min_time_diffusion_subsequent)
         abound_dest = np.add(abound_dest, bf_counts)
         ########

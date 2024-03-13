@@ -7,9 +7,9 @@ import time
 
 def main():
 
-    common_info = 'Simulation_Wt_100ms'
+    common_info = 'DnaQA7_20i100ms'
 
-    csv_path = 'D:\\Microscopy\\SMS_BP-master\\testScenario7SSGptWtFIX\\timelapse\\AnalysisRebindCBC_start0_Quality'
+    csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\AnalysisRebindCBC_start0_Quality5'
 
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\wt\\timelapse\\AnalysisRebindCBC_start0_Quality5'  #csv from trackmate
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\MutA7\\timelapse\\AnalysisRebindCBC_start0_Quality5'
@@ -33,17 +33,14 @@ def main():
     #csv_path = 'F:\\_Microscopy\\Rawdates\\_RUNreb1108_4diameter\\timelapse\\GOOD_OLD_Quality2point5\\pr212\\AnalysisRebindCBC_11146dia_dog'  # csv from trackmate
     #csv_path = 'C:\\Users\\JpRas\\OneDrive\\Escritorio\\RODREBIN\\SSB113\\timelapse'  # csv from trackmate
 
-    csv_path = csv_path+ '\\_ColBD_LIFE_FInal\\SMAUG_REBINDING_SPOTS'
-
+    #csv_path = csv_path+ '\\_ColBD_LIFE_FInalest\\SMAUG_REBINDING_SPOTS'
+    csv_path = csv_path + '\\_ColBD_LIFE_FInalest\\SMAUG_GAP-FIXED_SPOTS'
     # Enter all suffixes used, files will be generated for each suffix
     # Note: At least one spots file per video must exist for all suffixes, otherwise errors will occur
     #       If only a few video have spots with the suffix, create separate folders for masks and spots
-    suffixes = ['relaxed_rebinds_spotsAll',
-                'relaxed_rebinds_spotsTrack',
-                'strict_rebinds_spotsAll',
-                'strict_rebinds_spotsTrack',
-                'strict_rebinds_spotsDiff',
-                'strict_rebinds_spotsSame']
+
+    #suffixes = ['strict_rebinds_spotsAll','strict_rebinds_spotsRebind','strict_rebinds_spotsDiff','strict_rebinds_spotsSame']
+    suffixes = ['filtered_failed_spotsAll','filtered_passed_spotsAll','separated_spotsBound','separated_spotsConstricted', 'separated_spotsDiffusing', 'unfiltered_spotsAll']
 
 
     track_spots = {}

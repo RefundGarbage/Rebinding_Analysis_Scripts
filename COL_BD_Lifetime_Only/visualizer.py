@@ -19,7 +19,7 @@ def main():
     mask_path = configs['path']['mask_path']
 
 
-    outpath = csv_path + "\\_ColBD_LIFE_FInal"
+    outpath = csv_path + "\\_ColBD_LIFE_FInalN2"
 
     enable_fixed_particle = False
     use_gap_fixes = True

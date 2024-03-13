@@ -5,10 +5,51 @@ def probabilities_to_rates(prob_matrix, time_interval):
     for key, prob in prob_matrix.items():
         rate_matrix[key] = -np.log(1 - prob) / time_interval
     return rate_matrix
+#1.2
+#TetR
+#bound_dif = 0.054713313896987366
+#dif_bound = 0.01601317957166392
+
+#     wt
+#bound_dif = 0.035961922670114
+#dif_bound = 0.01555709205847491
+
+#     dm
+#bound_dif = 0.0247050777910754
+#dif_bound = 0.00664822520281736
+
+#1.0
+#TetR
+#bound_dif = 0.05468685364441135
+#dif_bound = 0.011766473947559185
+
+#     wt
+#bound_dif = 0.03401592718998862
+#dif_bound = 0.012287334593572778
+
+#     dm
+#bound_dif = 0.037267080745341616
+#dif_bound = 0.007412197791264551
+
+#1.2_ .15difProp
+#     wt
+#bound_dif =  0.03576891398988116
+#dif_bound =  0.020731222678500465
+
+#     dm
+#bound_dif = 0.024350510160336104
+#dif_bound = 0.008955033621211639
+
+#1.2_ .08difProp
+#     wt
+#bound_dif =  0.035961922670114
+#dif_bound =  0.01730864333205121
+
+#     dm
+#bound_dif = 0.024630120584965363
+#dif_bound = 0.007072311280956871
 
 
-bound_dif = .0273
-dif_bound = .011
 
 # Define transition probabilities and time interval
 transition_probabilities = {
